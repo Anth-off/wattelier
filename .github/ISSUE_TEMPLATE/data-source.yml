@@ -1,0 +1,43 @@
+name: Intégration énergétique ou appareil
+description: Demander la prise en charge d'une source de données, d'un compteur ou d'un appareil.
+title: 'feat(integration): '
+labels: [enhancement, integration]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Type d'intégration
+      options: [Compteur ou fournisseur, Prise ou appareil connecté, Tarif, Import ou export, Autre]
+    validations: { required: true }
+  - type: input
+    id: product
+    attributes: { label: Service ou modèle exact }
+    validations: { required: true }
+  - type: textarea
+    id: data
+    attributes:
+      {
+        label: Données disponibles,
+        description: Fréquence,
+        unités et méthode d'accès,
+        sans aucun identifiant réel.,
+      }
+    validations: { required: true }
+  - type: textarea
+    id: usecase
+    attributes: { label: Cas d'usage }
+    validations: { required: true }
+  - type: textarea
+    id: docs
+    attributes: { label: Documentation officielle, description: Liens vers les protocoles ou API. }
+  - type: textarea
+    id: acceptance
+    attributes: { label: Critères d'acceptation }
+    validations: { required: true }
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Confidentialité
+      options:
+        - label: Cette issue ne contient ni secret, ni PRM réel, ni identifiant d'appareil.
+          required: true

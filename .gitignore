@@ -1,0 +1,32 @@
+# Dépendances et sorties générées
+node_modules/
+dist/
+coverage/
+
+# Données locales — peuvent contenir des jetons Linky et des clés Sonoff
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Configuration privée
+.env
+.env.*
+!.env.example
+
+# Journaux, archives et sauvegardes
+*.log
+*.zip
+*.tar
+*.tar.gz
+*.bak
+*.old
+
+# Outils et systèmes
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.tsbuildinfo

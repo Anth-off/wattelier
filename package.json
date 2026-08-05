@@ -1,0 +1,57 @@
+{
+  "name": "suivi-elec",
+  "version": "0.0.0",
+  "description": "Suivi détaillé de la consommation électrique — Linky (Conso API) + prises Sonoff (eWeLink)",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "author": "N0thyTVOff",
+  "engines": {
+    "node": ">=22 <25",
+    "npm": ">=10"
+  },
+  "type": "module",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "concurrently -n server,web -c blue,green \"node server/index.js\" \"vite --config web/vite.config.js\"",
+    "build": "vite build --config web/vite.config.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint . --max-warnings 0",
+    "test": "node --test --experimental-test-coverage --test-coverage-lines=90 --test-coverage-functions=90 --test-coverage-branches=85",
+    "typecheck": "tsc --noEmit",
+    "validate:repo": "node scripts/validate-repository.js",
+    "audit": "npm audit --omit=dev --audit-level=high",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run validate:repo && npm test && npm run build"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.10.0",
+    "dotenv": "^17.4.2",
+    "echarts": "^6.1.0",
+    "express": "^4.21.2",
+    "multicast-dns": "^7.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "ws": "^8.21.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/express": "^5.0.6",
+    "@types/multicast-dns": "^7.2.4",
+    "@types/node": "^26.1.2",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@types/ws": "^8.18.1",
+    "@vitejs/plugin-react": "^6.0.5",
+    "concurrently": "^10.0.4",
+    "eslint": "^10.8.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "globals": "^17.9.0",
+    "prettier": "^3.9.6",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.0",
+    "yaml": "^2.9.0"
+  }
+}

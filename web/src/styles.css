@@ -1,0 +1,542 @@
+:root {
+  color-scheme: light;
+  /* chrome */
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.1);
+  /* séries catégorielles (ordre fixe, validé CVD) */
+  --s1: #2a78d6;
+  --s2: #1baf7a;
+  --s3: #eda100;
+  --s4: #008300;
+  --s5: #4a3aa7;
+  --s6: #e34948;
+  --s7: #e87ba4;
+  --s8: #eb6834;
+  /* séquentiel (bleu clair → foncé) */
+  --seq1: #cde2fb;
+  --seq2: #9ec5f4;
+  --seq3: #6da7ec;
+  --seq4: #3987e5;
+  --seq5: #256abf;
+  --seq6: #184f95;
+  --seq7: #0d366b;
+  /* statuts (réservés) */
+  --ok: #0ca30c;
+  --warn: #fab219;
+  --serious: #ec835a;
+  --crit: #d03b3b;
+  --good-text: #006300;
+  --neutral-slice: #b5b3ab;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --ink: #ffffff;
+  --ink2: #c3c2b7;
+  --muted: #898781;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgba(255, 255, 255, 0.1);
+  --s1: #3987e5;
+  --s2: #199e70;
+  --s3: #c98500;
+  --s4: #008300;
+  --s5: #9085e9;
+  --s6: #e66767;
+  --s7: #d55181;
+  --s8: #d95926;
+  --good-text: #0ca30c;
+  --neutral-slice: #55544f;
+}
+
+* {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%; /* iOS : pas de re-dimensionnement auto du texte */
+  text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  font-size: 14px;
+  -webkit-tap-highlight-color: transparent; /* pas de flash gris au tap */
+  overscroll-behavior-y: none;
+}
+
+/* zones de sécurité iPhone (encoche/Dynamic Island + barre d'accueil), utiles
+   surtout en mode « app » ajoutée à l'écran d'accueil (plein écran) */
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: env(safe-area-inset-top) calc(16px + env(safe-area-inset-right))
+    calc(48px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+}
+
+header.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 0 10px;
+}
+header.topbar h1 {
+  font-size: 20px;
+  margin: 0;
+  font-weight: 650;
+}
+.statuses {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px;
+  background: var(--surface);
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.theme-btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink2);
+  border-radius: 8px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+nav.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--grid);
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+nav.tabs button {
+  background: none;
+  border: none;
+  padding: 9px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--ink2);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+nav.tabs button.active {
+  color: var(--ink);
+  border-bottom-color: var(--s1);
+  font-weight: 600;
+}
+nav.tabs button:hover {
+  color: var(--ink);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.card .label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.card .value {
+  font-size: 26px;
+  font-weight: 650;
+  line-height: 1.15;
+}
+.card .value small {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink2);
+}
+.card .sub {
+  font-size: 12px;
+  color: var(--ink2);
+  margin-top: 4px;
+}
+.card .delta-up {
+  color: var(--crit);
+}
+.card .delta-down {
+  color: var(--good-text);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 18px;
+}
+.panel h2 {
+  font-size: 15px;
+  margin: 0 0 12px;
+  font-weight: 650;
+}
+.panel h2 .hint {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: 8px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.filters button {
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--ink2);
+  border-radius: 8px;
+  padding: 5px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.filters button.active {
+  background: var(--s1);
+  border-color: var(--s1);
+  color: #fff;
+  font-weight: 600;
+}
+.filters input[type='date'] {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+@media (max-width: 900px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.data th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 500;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--grid);
+}
+table.data td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--grid);
+}
+table.data td.num,
+table.data th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+table.data input {
+  border: 1px solid transparent;
+  background: none;
+  color: var(--ink);
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-size: 13px;
+  width: 100%;
+}
+table.data input:hover,
+table.data input:focus {
+  border-color: var(--border);
+  background: var(--page);
+  outline: none;
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+  margin-right: 7px;
+}
+
+form.settings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+form.settings label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--ink2);
+}
+form.settings input,
+form.settings textarea {
+  border: 1px solid var(--border);
+  background: var(--page);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+}
+form.settings textarea {
+  min-height: 74px;
+  resize: vertical;
+}
+.btn {
+  border: none;
+  background: var(--s1);
+  color: #fff;
+  border-radius: 8px;
+  padding: 9px 18px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+.btn.secondary {
+  background: none;
+  color: var(--ink2);
+  border: 1px solid var(--border);
+  font-weight: 500;
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.note {
+  font-size: 12.5px;
+  color: var(--ink2);
+  line-height: 1.55;
+}
+.note code {
+  background: var(--page);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+.note a {
+  color: var(--s1);
+}
+
+.empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 34px 12px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.toggle .track {
+  width: 38px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--axis);
+  position: relative;
+  transition: background 0.15s;
+}
+.toggle .track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.15s;
+}
+.toggle.on .track {
+  background: var(--s1);
+}
+.toggle.on .track::after {
+  left: 19px;
+}
+
+/* conteneur qui laisse défiler horizontalement un large tableau sur petit écran */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-scroll table.data {
+  min-width: 460px;
+}
+
+/* ===== Adaptation téléphone (iPhone 15 Plus ≈ 430 pt de large) ===== */
+@media (max-width: 640px) {
+  body {
+    font-size: 15px;
+  }
+  .app {
+    padding-left: calc(10px + env(safe-area-inset-left));
+    padding-right: calc(10px + env(safe-area-inset-right));
+  }
+
+  header.topbar {
+    gap: 10px 12px;
+    padding-top: calc(10px + env(safe-area-inset-top));
+  }
+  header.topbar h1 {
+    font-size: 19px;
+  }
+  .statuses {
+    gap: 6px;
+    width: 100%;
+    margin-left: 0;
+  }
+  .theme-btn {
+    padding: 7px 12px;
+    margin-left: auto;
+  }
+
+  /* onglets : une seule ligne défilante, l'onglet actif reste visible */
+  nav.tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 2px;
+    margin: 0 -10px 14px;
+    padding: 0 10px;
+    scrollbar-width: none;
+  }
+  nav.tabs::-webkit-scrollbar {
+    display: none;
+  }
+  nav.tabs button {
+    flex: 0 0 auto;
+    padding: 11px 13px;
+    font-size: 15px;
+  }
+
+  /* cartes : 2 par ligne, chiffres un peu plus compacts */
+  .cards {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .card {
+    padding: 12px 13px;
+  }
+  .card .value {
+    font-size: 22px;
+  }
+  .card .label {
+    font-size: 11.5px;
+  }
+
+  .panel {
+    padding: 13px 12px;
+    margin-bottom: 14px;
+  }
+  /* les « astuces » à côté des titres passent en dessous pour ne pas serrer */
+  .panel h2 {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .panel h2 .hint {
+    margin-left: 0;
+  }
+
+  /* champs & boutons : ≥16px pour empêcher le zoom auto de Safari, cibles tactiles plus grandes */
+  .filters button,
+  .btn,
+  .btn.secondary {
+    padding: 9px 14px;
+    font-size: 15px;
+  }
+  /* règle globale : AUCUN champ sous 16px (sinon Safari zoome au focus) */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+  form.settings input,
+  form.settings textarea,
+  table.data input {
+    padding: 9px 11px;
+  }
+  form.settings {
+    grid-template-columns: 1fr;
+  }
+
+  /* tableaux larges : défilement horizontal au doigt */
+  table.data {
+    font-size: 14px;
+  }
+  table.data th,
+  table.data td {
+    padding: 8px 7px;
+  }
+
+  /* pastilles d'état plus lisibles */
+  .status-pill {
+    font-size: 12px;
+    padding: 5px 11px;
+  }
+}
+
+/* très petits écrans : cartes en pleine largeur */
+@media (max-width: 380px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}

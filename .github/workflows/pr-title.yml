@@ -1,0 +1,26 @@
+name: Titre de pull request
+
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  title:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      # Ce job ne récupère et n'exécute jamais le code de la PR.
+      - name: Vérifier Conventional Commits
+        env:
+          PR_ACTOR: ${{ github.event.pull_request.user.login }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern='^(feat|fix|docs|refactor|test|build|ci|chore|perf|revert)(\([a-z0-9._/-]+\))?!?: .+'
+          [[ "$PR_TITLE" =~ $pattern ]] || { echo 'Titre non conforme à Conventional Commits.'; exit 1; }
+          if [[ "$PR_ACTOR" != 'dependabot[bot]' ]]; then
+            subject="${PR_TITLE#*: }"
+            [[ "$subject" =~ ^[a-zà-ÿ0-9] ]] || { echo 'Le sujet doit commencer par une minuscule.'; exit 1; }
+          fi

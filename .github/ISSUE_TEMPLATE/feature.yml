@@ -1,0 +1,51 @@
+name: Proposer une fonctionnalité
+description: Expliquer un besoin utilisateur et ses critères d'acceptation.
+title: 'feat: '
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes: { label: Besoin utilisateur, description: Qui rencontre quel problème ? }
+    validations: { required: true }
+  - type: textarea
+    id: current
+    attributes: { label: Fonctionnement actuel }
+    validations: { required: true }
+  - type: textarea
+    id: solution
+    attributes: { label: Solution envisagée }
+    validations: { required: true }
+  - type: input
+    id: users
+    attributes: { label: Utilisateurs concernés }
+    validations: { required: true }
+  - type: dropdown
+    id: area
+    attributes:
+      label: Partie du projet
+      options: [Linky, Sonoff, Collecte, Statistiques, Facturation, Interface, Installation, Autre]
+    validations: { required: true }
+  - type: textarea
+    id: constraints
+    attributes:
+      {
+        label: Contraintes,
+        description: Matériel,
+        réseau local,
+        confidentialité,
+        performance ou compatibilité.,
+      }
+  - type: textarea
+    id: acceptance
+    attributes: { label: Critères d'acceptation, placeholder: '- [ ] …' }
+    validations: { required: true }
+  - type: textarea
+    id: alternatives
+    attributes: { label: Alternatives étudiées }
+  - type: checkboxes
+    id: duplicate
+    attributes:
+      label: Vérification
+      options:
+        - label: J'ai recherché les propositions existantes.
+          required: true

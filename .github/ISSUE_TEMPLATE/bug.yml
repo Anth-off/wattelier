@@ -1,0 +1,54 @@
+name: Signaler un bug
+description: Décrire un comportement incorrect et reproductible.
+title: 'fix: '
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "Merci de retirer jetons, identifiants, clés d'appareil et données énergétiques personnelles."
+  - type: textarea
+    id: observed
+    attributes: { label: Problème observé, description: Que s'est-il passé ? }
+    validations: { required: true }
+  - type: textarea
+    id: expected
+    attributes: { label: Résultat attendu }
+    validations: { required: true }
+  - type: textarea
+    id: reproduce
+    attributes: { label: Étapes de reproduction, placeholder: "1. …\n2. …\n3. …" }
+    validations: { required: true }
+  - type: dropdown
+    id: area
+    attributes:
+      label: Partie concernée
+      options: [Linky, Sonoff, Collecte, Statistiques, Facturation, Interface, Installation, Autre]
+    validations: { required: true }
+  - type: input
+    id: version
+    attributes: { label: Version, placeholder: 'ex. 1.0.0 ou SHA du commit' }
+    validations: { required: true }
+  - type: textarea
+    id: environment
+    attributes:
+      { label: Environnement, description: Appareil, système, navigateur et version de Node.js. }
+    validations: { required: true }
+  - type: textarea
+    id: diagnostics
+    attributes: { label: Journaux ou diagnostic, description: Extraits anonymisés uniquement. }
+  - type: textarea
+    id: screenshots
+    attributes: { label: Captures anonymisées }
+  - type: dropdown
+    id: frequency
+    attributes: { label: Fréquence, options: [Toujours, Souvent, Parfois, Une seule fois] }
+    validations: { required: true }
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Vérifications
+      options:
+        - label: J'ai recherché les issues existantes.
+          required: true
+        - label: J'ai retiré tous les secrets et renseignements personnels.
+          required: true

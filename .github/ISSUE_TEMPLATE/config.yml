@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Signaler une vulnérabilité en privé
+    url: https://github.com/N0thyTVOff/suivi-elec/security/advisories/new
+    about: Ne publiez jamais une faille de sécurité ou un secret dans une issue publique.

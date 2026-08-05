@@ -1,0 +1,38 @@
+name: Calcul ou statistique énergétique
+description: Signaler ou proposer une règle de calcul, de coût ou de facturation.
+title: 'feat(stats): '
+labels: [enhancement, statistics]
+body:
+  - type: input
+    id: metric
+    attributes: { label: Indicateur ou calcul concerné }
+    validations: { required: true }
+  - type: textarea
+    id: rule
+    attributes: { label: Règle attendue, description: Formule, unités, arrondis et période. }
+    validations: { required: true }
+  - type: textarea
+    id: example
+    attributes: { label: Exemple anonymisé, description: Données d'entrée et résultat attendu. }
+    validations: { required: true }
+  - type: textarea
+    id: edgecases
+    attributes:
+      {
+        label: Cas limites,
+        description: Données manquantes,
+        changement tarifaire,
+        fuseau horaire,
+        compteur récent,
+        etc.,
+      }
+  - type: textarea
+    id: reference
+    attributes: { label: Référence tarifaire ou réglementaire }
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Confidentialité
+      options:
+        - label: Les exemples sont fictifs ou anonymisés.
+          required: true

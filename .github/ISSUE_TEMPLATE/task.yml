@@ -1,0 +1,37 @@
+name: Tâche technique
+description: Planifier une amélioration interne clairement bornée.
+title: 'chore: '
+labels: [technical]
+body:
+  - type: input
+    id: objective
+    attributes: { label: Objectif technique }
+    validations: { required: true }
+  - type: textarea
+    id: context
+    attributes: { label: Contexte }
+    validations: { required: true }
+  - type: textarea
+    id: scope
+    attributes: { label: Périmètre }
+    validations: { required: true }
+  - type: textarea
+    id: out
+    attributes: { label: Hors périmètre }
+    validations: { required: true }
+  - type: textarea
+    id: validation
+    attributes: { label: Critères de validation, placeholder: '- [ ] …' }
+    validations: { required: true }
+  - type: textarea
+    id: risks
+    attributes:
+      {
+        label: Risques,
+        description: Données locales,
+        migration,
+        collecte continue ou compatibilité.,
+      }
+  - type: textarea
+    id: dependencies
+    attributes: { label: Dépendances }
