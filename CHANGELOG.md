@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.0](https://github.com/N0thyTVOff/wattelier/compare/suivi-elec-v1.0.0...wattelier-v2.0.0) (2026-08-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* l'application, le paquet et les interfaces utilisateur portent désormais le nom Wattelier.
+
+### Fonctionnalités
+
+* ajoute l’onboarding et l’accès distant sécurisé ([#15](https://github.com/N0thyTVOff/wattelier/issues/15)) ([e949e4a](https://github.com/N0thyTVOff/wattelier/commit/e949e4a08146f7117582da4c00811cfe4238302b))
+* transforme Suivi Élec en Wattelier ([#17](https://github.com/N0thyTVOff/wattelier/issues/17)) ([6b83342](https://github.com/N0thyTVOff/wattelier/commit/6b833429dba609806179f66d4cfa892b215c7b18))
+
 ## [1.0.0](https://github.com/N0thyTVOff/wattelier/compare/suivi-elec-v1.0.0...suivi-elec-v1.0.0) (2026-08-06)
 
 
@@ -28,5 +40,5 @@
 
 ## Journal des modifications
 
-Les changements notables seront regroupés ici par Release Please. La première Release PR
-préparera la version `1.0.0` ; aucune version n'est publiée avant sa fusion manuelle.
+Les changements notables sont regroupés ici par Release Please. Aucune version n'est publiée avant
+la fusion manuelle de sa Release PR.
