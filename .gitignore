@@ -5,6 +5,7 @@ coverage/
 release/
 test-results/
 playwright-report/
+artifacts/
 
 # Données locales — peuvent contenir des jetons Linky et des clés Sonoff
 data/

@@ -1,0 +1,135 @@
+name: iOS · Captures App Store
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios-app-store-screenshots.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  screenshots:
+    name: ${{ matrix.family }}
+    runs-on: macos-26
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - family: iphone-6.5
+            candidates: 'iPhone 14 Plus|iPhone 13 Pro Max|iPhone 12 Pro Max|iPhone 11 Pro Max'
+          - family: ipad-13
+            candidates: 'iPad Pro 13-inch (M5)|iPad Pro 13-inch (M4)'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Installer XcodeGen
+        run: brew install xcodegen
+      - name: Générer le projet Xcode
+        working-directory: ios
+        run: xcodegen generate
+      - name: Choisir le simulateur
+        id: simulator
+        env:
+          CANDIDATES: ${{ matrix.candidates }}
+        shell: bash
+        run: |
+          DEVICE_ID="$(xcrun simctl list devices available -j | python3 -c '
+          import json, os, sys
+          devices = [item for runtime in json.load(sys.stdin)["devices"].values() for item in runtime]
+          candidates = os.environ["CANDIDATES"].split("|")
+          match = next((item for name in candidates for item in devices if item["name"] == name), None)
+          print(match["udid"] if match else "")
+          ')"
+          if [[ -z "$DEVICE_ID" ]]; then
+            DEVICE_TYPE_ID="$(xcrun simctl list devicetypes -j | python3 -c '
+            import json, os, sys
+            types = json.load(sys.stdin)["devicetypes"]
+            candidates = os.environ["CANDIDATES"].split("|")
+            match = next((item for name in candidates for item in types if item["name"] == name), None)
+            if match is None:
+                raise SystemExit("Aucun type de simulateur compatible parmi : " + ", ".join(candidates))
+            print(match["identifier"])
+            ')"
+            RUNTIME_ID="$(xcrun simctl list runtimes available -j | python3 -c '
+            import json, sys
+            runtimes = [item for item in json.load(sys.stdin)["runtimes"] if ".iOS-" in item["identifier"]]
+            print(max(runtimes, key=lambda item: tuple(map(int, item["version"].split("."))))["identifier"])
+            ')"
+            DEVICE_ID="$(xcrun simctl create 'Wattelier App Store' "$DEVICE_TYPE_ID" "$RUNTIME_ID")"
+          fi
+          echo "device_id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
+      - name: Configurer le simulateur en français
+        shell: bash
+        run: |
+          DEVICE_ID='${{ steps.simulator.outputs.device_id }}'
+          xcrun simctl boot "$DEVICE_ID" || true
+          xcrun simctl bootstatus "$DEVICE_ID" -b
+          xcrun simctl spawn "$DEVICE_ID" defaults write NSGlobalDomain AppleLanguages -array fr
+          xcrun simctl spawn "$DEVICE_ID" defaults write NSGlobalDomain AppleLocale -string fr_FR
+          xcrun simctl spawn "$DEVICE_ID" defaults write NSGlobalDomain AppleICUForce24HourTime -bool true
+          xcrun simctl shutdown "$DEVICE_ID"
+          xcrun simctl boot "$DEVICE_ID"
+          xcrun simctl bootstatus "$DEVICE_ID" -b
+      - name: Capturer les vues de démonstration
+        working-directory: ios
+        run: |
+          xcodebuild test \
+            -project Wattelier.xcodeproj \
+            -scheme Wattelier \
+            -destination 'platform=iOS Simulator,id=${{ steps.simulator.outputs.device_id }}' \
+            -only-testing:WattelierUITests/WattelierUITests/testAppStoreScreenshots \
+            -resultBundlePath AppStoreScreenshots.xcresult \
+            CODE_SIGNING_ALLOWED=NO
+      - name: Exporter des JPG RVB sans transparence
+        working-directory: ios
+        shell: bash
+        run: |
+          OUTPUT="AppStoreScreenshots-${{ matrix.family }}"
+          mkdir -p "$OUTPUT/raw" "$OUTPUT/png"
+          xcrun xcresulttool export attachments \
+            --path AppStoreScreenshots.xcresult \
+            --output-path "$OUTPUT/raw"
+          OUTPUT="$OUTPUT" python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+          import shutil
+
+          output = pathlib.Path(os.environ["OUTPUT"])
+          expected = ["01-aujourdhui", "02-temps-reel", "03-historique", "04-appareils", "05-facturation"]
+          manifest = json.loads((output / "raw" / "manifest.json").read_text())
+          found = {}
+          for test in manifest:
+              for attachment in test.get("attachments", []):
+                  suggested = attachment.get("suggestedHumanReadableName", "")
+                  for name in expected:
+                      if name in suggested:
+                          found[name] = output / "raw" / attachment["exportedFileName"]
+          missing = [name for name in expected if name not in found]
+          if missing:
+              raise SystemExit("Captures absentes du manifeste : " + ", ".join(missing))
+          for name, source in found.items():
+              shutil.copy2(source, output / "png" / f"{name}.png")
+          PY
+          find "$OUTPUT/png" -type f -name '*.png' -print0 | while IFS= read -r -d '' source; do
+            base="$(basename "${source%.png}")"
+            sips -s format jpeg -s formatOptions 95 "$source" \
+              --out "$OUTPUT/${base}.jpg"
+          done
+          test "$(find "$OUTPUT" -maxdepth 1 -name '*.jpg' | wc -l | tr -d ' ')" -eq 5
+          rm -rf "$OUTPUT/raw" "$OUTPUT/png"
+          for image in "$OUTPUT"/*.jpg; do
+            file "$image"
+            sips -g pixelWidth -g pixelHeight -g space "$image"
+          done
+      - name: Publier les captures
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: app-store-${{ matrix.family }}
+          path: ios/AppStoreScreenshots-${{ matrix.family }}/*.jpg
+          retention-days: 30
+          if-no-files-found: error

@@ -57,6 +57,13 @@ l’app déclare ne pas utiliser de chiffrement non exempté.
 - Accès réseau local : l’autorisation sert uniquement à joindre un serveur Wattelier du même réseau.
 - L’accès distant nécessite une adresse HTTPS atteignable, par exemple via Tailscale Serve.
 - Les captures doivent être réalisées à partir du mode démonstration, sans données personnelles.
+- Le workflow **iOS · Captures App Store** produit cinq JPG pour l’iPhone 6,5 pouces et cinq JPG
+  pour l’iPad 13 pouces. Les fichiers sont en RVB, sans transparence, et restent disponibles comme
+  artefacts GitHub Actions pendant 30 jours.
+- Le fichier de couverture géographique GeoJSON reste vide : Apple ne le demande qu’aux apps de
+  routage point à point, ce que Wattelier n’est pas.
+- Les textes validés, les URL, le copyright, les notes de revue et le build à choisir sont regroupés
+  dans [`ios/AppStore/metadata.fr-FR.md`](../ios/AppStore/metadata.fr-FR.md).
 
 Le workflow prépare TestFlight mais ne soumet pas automatiquement la version à la revue publique :
 la fiche, les captures, les déclarations de confidentialité et le bouton **Soumettre pour examen**
