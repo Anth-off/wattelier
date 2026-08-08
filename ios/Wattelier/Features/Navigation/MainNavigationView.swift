@@ -27,50 +27,59 @@ enum AppSection: String, CaseIterable, Identifiable {
 
 struct MainNavigationView: View {
     let repository: any WattelierRepository
+    @StateObject private var store: DashboardStore
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selection: AppSection = .overview
 
+    init(repository: any WattelierRepository) {
+        self.repository = repository
+        _store = StateObject(wrappedValue: DashboardStore(repository: repository))
+    }
+
     var body: some View {
-        if horizontalSizeClass == .regular {
-            NavigationSplitView {
-                List(AppSection.allCases) { section in
-                    Button {
-                        selection = section
-                    } label: {
-                        Label(section.label, systemImage: section.symbol)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+        Group {
+            if horizontalSizeClass == .regular {
+                NavigationSplitView {
+                    List(AppSection.allCases) { section in
+                        Button {
+                            selection = section
+                        } label: {
+                            Label(section.label, systemImage: section.symbol)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(selection == section ? WattelierTheme.accent : .primary)
+                        .accessibilityAddTraits(selection == section ? .isSelected : [])
                     }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(selection == section ? WattelierTheme.accent : .primary)
-                    .accessibilityAddTraits(selection == section ? .isSelected : [])
+                    .navigationTitle("Wattelier")
+                    .safeAreaInset(edge: .bottom) {
+                        ServerBadge(repository: repository).padding()
+                    }
+                } detail: {
+                    NavigationStack { destination(selection) }
                 }
-                .navigationTitle("Wattelier")
-                .safeAreaInset(edge: .bottom) {
-                    ServerBadge(repository: repository).padding()
+            } else {
+                TabView(selection: $selection) {
+                    tab(.overview) { OverviewView(store: store) }
+                    tab(.realtime) { RealTimeView(store: store) }
+                    tab(.history) { HistoryView(store: store) }
+                    tab(.devices) { DevicesView(store: store) }
+                    NavigationStack { MoreView(repository: repository, store: store) }
+                        .tabItem { Label("Plus", systemImage: "ellipsis") }
+                        .tag(AppSection.settings)
                 }
-            } detail: {
-                NavigationStack { destination(selection) }
-            }
-        } else {
-            TabView(selection: $selection) {
-                tab(.overview) { OverviewView(repository: repository) }
-                tab(.realtime) { RealTimeView(repository: repository) }
-                tab(.history) { HistoryView(repository: repository) }
-                tab(.devices) { DevicesView(repository: repository) }
-                NavigationStack { MoreView(repository: repository) }
-                    .tabItem { Label("Plus", systemImage: "ellipsis") }
-                    .tag(AppSection.settings)
             }
         }
+        .task { await store.run() }
     }
 
     @ViewBuilder private func destination(_ section: AppSection) -> some View {
         switch section {
-        case .overview: OverviewView(repository: repository)
-        case .realtime: RealTimeView(repository: repository)
-        case .history: HistoryView(repository: repository)
-        case .devices: DevicesView(repository: repository)
-        case .billing: BillingView(repository: repository)
+        case .overview: OverviewView(store: store)
+        case .realtime: RealTimeView(store: store)
+        case .history: HistoryView(store: store)
+        case .devices: DevicesView(store: store)
+        case .billing: BillingView(store: store)
         case .settings: SettingsView(repository: repository)
         }
     }
@@ -84,10 +93,11 @@ struct MainNavigationView: View {
 
 struct MoreView: View {
     let repository: any WattelierRepository
+    @ObservedObject var store: DashboardStore
     var body: some View {
         List {
             Section {
-                NavigationLink { BillingView(repository: repository) } label: {
+                NavigationLink { BillingView(store: store) } label: {
                     Label("Facturation", systemImage: AppSection.billing.symbol)
                 }
                 NavigationLink { SettingsView(repository: repository) } label: {
