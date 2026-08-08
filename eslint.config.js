@@ -17,7 +17,7 @@ export default [
   },
   js.configs.recommended,
   {
-    files: ['server/**/*.js', 'scripts/**/*.js', 'desktop/**/*.js', '*.js'],
+    files: ['server/**/*.js', 'scripts/**/*.js', 'ios/scripts/**/*.mjs', 'desktop/**/*.js', '*.js'],
     languageOptions: {
       ecmaVersion: 'latest',
       globals: globals.node,

@@ -39,6 +39,13 @@ jobs:
           test -n "$API_KEY_ID"
           test -n "$API_ISSUER_ID"
           test -n "$API_KEY_P8"
+      - name: Vérifier les capacités Apple du widget
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_P8: ${{ secrets.APP_STORE_CONNECT_API_KEY_P8 }}
+          APPLE_CAPABILITIES_FIX: ${{ inputs.version == 'repair-widget' && '1' || '0' }}
+        run: node ios/scripts/verify-apple-capabilities.mjs
       - name: Installer XcodeGen
         run: brew install xcodegen
       - name: Installer la clé App Store Connect
@@ -64,10 +71,17 @@ jobs:
           -authenticationKeyID "$API_KEY_ID"
           -authenticationKeyIssuerID "$API_ISSUER_ID"
           DEVELOPMENT_TEAM="$APPLE_TEAM_ID"
-          MARKETING_VERSION='${{ inputs.version }}'
-          CURRENT_PROJECT_VERSION='${{ inputs.build }}'
+          MARKETING_VERSION='${{ (inputs.version == 'diagnostic' || inputs.version == 'repair-widget') && '1.0.0' || inputs.version }}'
+          CURRENT_PROJECT_VERSION='${{ (inputs.version == 'diagnostic' || inputs.version == 'repair-widget') && '1' || inputs.build }}'
           CODE_SIGNING_ALLOWED=NO
           CODE_SIGNING_REQUIRED=NO
+      - name: Intégrer les entitlements dans l’archive
+        working-directory: ios
+        run: |
+          APP_PATH="$RUNNER_TEMP/Wattelier.xcarchive/Products/Applications/Wattelier.app"
+          WIDGET_PATH="$APP_PATH/PlugIns/WattelierWidgets.appex"
+          codesign --force --sign - --entitlements WattelierWidgets/WattelierWidgets.entitlements "$WIDGET_PATH"
+          codesign --force --sign - --entitlements Wattelier/Support/Wattelier.entitlements "$APP_PATH"
       - name: Vérifier le manifeste archivé
         run: |
           APP_PLIST="$RUNNER_TEMP/Wattelier.xcarchive/Products/Applications/Wattelier.app/Info.plist"
@@ -75,7 +89,35 @@ jobs:
           /usr/libexec/PlistBuddy -c 'Print :UISupportedInterfaceOrientations' "$APP_PLIST" >/dev/null
           /usr/libexec/PlistBuddy -c 'Print :UISupportedInterfaceOrientations~ipad' "$APP_PLIST" >/dev/null
           test -d "$RUNNER_TEMP/Wattelier.xcarchive/Products/Applications/Wattelier.app/PlugIns/WattelierWidgets.appex"
+      - name: Vérifier la signature et les App Groups
+        if: inputs.version == 'diagnostic' || inputs.version == 'repair-widget'
+        env:
+          EXPORT_OPTIONS: ${{ runner.temp }}/ExportOptions.plist
+        run: |
+          /usr/libexec/PlistBuddy -c 'Add :method string app-store-connect' "$EXPORT_OPTIONS"
+          /usr/libexec/PlistBuddy -c 'Add :destination string export' "$EXPORT_OPTIONS"
+          /usr/libexec/PlistBuddy -c 'Add :signingStyle string automatic' "$EXPORT_OPTIONS"
+          /usr/libexec/PlistBuddy -c "Add :teamID string $APPLE_TEAM_ID" "$EXPORT_OPTIONS"
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Wattelier.xcarchive" \
+            -exportPath "$RUNNER_TEMP/signed-export" \
+            -exportOptionsPlist "$EXPORT_OPTIONS" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/AuthKey_${API_KEY_ID}.p8" \
+            -authenticationKeyID "$API_KEY_ID" \
+            -authenticationKeyIssuerID "$API_ISSUER_ID"
+          IPA_PATH="$(find "$RUNNER_TEMP/signed-export" -name '*.ipa' -print -quit)"
+          test -n "$IPA_PATH"
+          unzip -q "$IPA_PATH" -d "$RUNNER_TEMP/signed-ipa"
+          APP_PATH="$RUNNER_TEMP/signed-ipa/Payload/Wattelier.app"
+          WIDGET_PATH="$APP_PATH/PlugIns/WattelierWidgets.appex"
+          codesign -d --entitlements :- "$APP_PATH" > "$RUNNER_TEMP/app-entitlements.plist"
+          codesign -d --entitlements :- "$WIDGET_PATH" > "$RUNNER_TEMP/widget-entitlements.plist"
+          /usr/libexec/PlistBuddy -c 'Print :com.apple.security.application-groups' "$RUNNER_TEMP/app-entitlements.plist" | grep -F 'group.com.n0thytvoff.Wattelier'
+          /usr/libexec/PlistBuddy -c 'Print :com.apple.security.application-groups' "$RUNNER_TEMP/widget-entitlements.plist" | grep -F 'group.com.n0thytvoff.Wattelier'
+          echo 'La signature App Store partage bien le même App Group.'
       - name: Signer dans le cloud et envoyer à App Store Connect
+        if: inputs.version != 'diagnostic' && inputs.version != 'repair-widget'
         env:
           EXPORT_OPTIONS: ${{ runner.temp }}/ExportOptions.plist
         run: |

@@ -46,6 +46,13 @@ final class DashboardStoreTests: XCTestCase {
         XCTAssertEqual(WidgetSnapshotStore.load(from: directory), .placeholder)
     }
 
+    func testWidgetSnapshotSaveReportsAnUnavailableContainer() {
+        let saved = WidgetSnapshotStore.save(.placeholder, to: nil)
+
+        XCTAssertFalse(saved)
+        XCTAssertNil(WidgetSnapshotStore.load(from: nil))
+    }
+
     func testManualMeterReadingIsForwardedAndRefreshesDashboard() async throws {
         let repository = ControllableRepository()
         let store = DashboardStore(repository: repository)

@@ -163,7 +163,7 @@ final class DashboardStore: ObservableObject {
     }
 
     private func saveWidgetSnapshot(_ summary: Summary) {
-        WidgetSnapshotStore.save(WidgetSnapshot(
+        let saved = WidgetSnapshotStore.save(WidgetSnapshot(
             updatedAt: Date(),
             serverName: repository.displayServer,
             isDemo: repository.isDemo,
@@ -174,7 +174,9 @@ final class DashboardStore: ObservableObject {
                 WidgetSnapshot.Device(id: $0.id, name: $0.name, watts: $0.watts, isFresh: $0.isFresh)
             }
         ))
-        WidgetCenter.shared.reloadTimelines(ofKind: "WattelierEnergyWidget")
+        if saved {
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 }
 
