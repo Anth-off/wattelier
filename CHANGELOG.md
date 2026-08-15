@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.5.0](https://github.com/N0thyTVOff/wattelier/compare/wattelier-v2.4.4...wattelier-v2.5.0) (2026-08-15)
+
+
+### Fonctionnalités
+
+* **desktop:** ajoute le transfert chiffré du serveur entre deux PC ([#56](https://github.com/N0thyTVOff/wattelier/pull/56)) ([fac8dbb](https://github.com/N0thyTVOff/wattelier/commit/fac8dbb1699a4ec391e47593a94f8b632d4d8f1d))
+* **ios:** ajoute l’application native Wattelier ([#47](https://github.com/N0thyTVOff/wattelier/pull/47)) ([6666ab2](https://github.com/N0thyTVOff/wattelier/commit/6666ab2))
+* **ios:** ajoute les cartes de bienvenue ([#50](https://github.com/N0thyTVOff/wattelier/pull/50)) ([63223ff](https://github.com/N0thyTVOff/wattelier/commit/63223ff))
+* **ios:** fluidifie les données et ajoute les widgets ([#52](https://github.com/N0thyTVOff/wattelier/pull/52)) ([dfa47d1](https://github.com/N0thyTVOff/wattelier/commit/dfa47d1))
+* **ios:** prépare la publication App Store ([#55](https://github.com/N0thyTVOff/wattelier/pull/55)) ([2aa576d](https://github.com/N0thyTVOff/wattelier/commit/2aa576d))
+
+
+### Corrections
+
+* **ios:** signe TestFlight sans appareil physique ([#49](https://github.com/N0thyTVOff/wattelier/pull/49)) ([836fba7](https://github.com/N0thyTVOff/wattelier/commit/836fba7))
+* **ios:** utilise une fiche de bienvenue native ([#51](https://github.com/N0thyTVOff/wattelier/pull/51)) ([5373022](https://github.com/N0thyTVOff/wattelier/commit/5373022))
+* **ios:** actualise l’accueil, les relevés et les widgets ([#53](https://github.com/N0thyTVOff/wattelier/pull/53)) ([098c280](https://github.com/N0thyTVOff/wattelier/commit/098c280))
+* **ios:** répare définitivement le partage des widgets ([#54](https://github.com/N0thyTVOff/wattelier/pull/54)) ([d7dbd4b](https://github.com/N0thyTVOff/wattelier/commit/d7dbd4b))
+
 ## [2.4.4](https://github.com/N0thyTVOff/wattelier/compare/wattelier-v2.4.3...wattelier-v2.4.4) (2026-08-08)
 
 
