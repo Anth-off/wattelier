@@ -15,6 +15,13 @@ import {
 import { readDesktopPreferences, writeDesktopPreferences } from '../desktop/preferences.js';
 import { readOpenAtLogin, updateOpenAtLogin } from '../desktop/login-item.js';
 import {
+  cancelServerMigration,
+  exportServerMigration,
+  performPendingServerMigration,
+  requestServerMigration,
+  stageServerMigration,
+} from '../desktop/migration.js';
+import {
   cancelApplicationReset,
   performPendingReset,
   requestApplicationReset,
@@ -47,6 +54,8 @@ test('résout les chemins installé et portable sans mélanger les données', ()
   assert.equal(path.basename(installed.preferencesPath), 'desktop-preferences.json');
   assert.equal(path.basename(installed.connectionPath), 'desktop-connection.bin');
   assert.equal(path.basename(installed.resetRequestPath), '.wattelier-reset-request');
+  assert.equal(path.basename(installed.migrationRequestPath), '.wattelier-migration-request');
+  assert.equal(path.basename(installed.migrationStagingDirectory), '.wattelier-migration-staging');
   assert.equal(
     path.dirname(installed.resetRequestPath),
     path.resolve(installed.dataDirectory, '..'),
@@ -237,6 +246,8 @@ test('le preload n’expose que les méthodes de bureau autorisées', () => {
     'checkForUpdates',
     'getTailscaleStatus',
     'enableTailscale',
+    'exportMigration',
+    'importMigration',
     'resetApplication',
   ]);
   assert.match(preload, /wattelier:get-runtime-info/);
@@ -245,6 +256,8 @@ test('le preload n’expose que les méthodes de bureau autorisées', () => {
   assert.match(preload, /wattelier:check-for-updates/);
   assert.match(preload, /wattelier:tailscale-status/);
   assert.match(preload, /wattelier:tailscale-enable/);
+  assert.match(preload, /wattelier:export-migration/);
+  assert.match(preload, /wattelier:import-migration/);
   assert.match(preload, /wattelier:reset-application/);
   assert.doesNotMatch(preload, /require\(['"](?:node:)?(?:fs|child_process)/);
 });
@@ -357,6 +370,115 @@ test('la réinitialisation gère une absence de données et les demandes annulé
   });
 });
 
+test('la migration chiffre, vérifie et restaure intégralement le serveur', async (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'wattelier-migration-test-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const sourceDirectory = path.join(directory, 'source');
+  const targetDirectory = path.join(directory, 'target');
+  const stagingDirectory = path.join(directory, '.staging');
+  const markerPath = path.join(directory, '.request');
+  const archive = path.join(directory, 'serveur.wattelier-backup');
+  fs.mkdirSync(sourceDirectory);
+  fs.mkdirSync(targetDirectory);
+  const sourceDatabasePath = path.join(sourceDirectory, 'elec.db');
+  const sourceDatabase = new Database(sourceDatabasePath);
+  sourceDatabase.exec(
+    "CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT); INSERT INTO settings VALUES ('tuya_access_secret', 'secret-inexportable');",
+  );
+  fs.writeFileSync(
+    path.join(sourceDirectory, 'desktop-preferences.json'),
+    JSON.stringify({ automaticUpdates: true, mode: 'server', ignored: 'non' }),
+  );
+  fs.writeFileSync(path.join(targetDirectory, 'current.txt'), 'installation actuelle');
+
+  await exportServerMigration({
+    destination: archive,
+    passphrase: 'mot-de-passe-solide',
+    dataDirectory: sourceDirectory,
+    preferencesPath: path.join(sourceDirectory, 'desktop-preferences.json'),
+    appVersion: '2.4.4',
+    portable: false,
+    /** @param {string} destination */
+    backupDatabase: (destination) => sourceDatabase.backup(destination),
+    now: new Date('2026-08-15T10:30:00.000Z'),
+  });
+  sourceDatabase.close();
+
+  assert.equal(fs.readFileSync(archive).includes(Buffer.from('secret-inexportable')), false);
+  await assert.rejects(
+    stageServerMigration({
+      source: archive,
+      passphrase: 'mauvais-mot-de-passe',
+      stagingDirectory,
+    }),
+    /incorrect|endommagée/,
+  );
+  assert.equal(fs.existsSync(stagingDirectory), false);
+
+  const details = await stageServerMigration({
+    source: archive,
+    passphrase: 'mot-de-passe-solide',
+    stagingDirectory,
+  });
+  assert.deepEqual(details, {
+    createdAt: '2026-08-15T10:30:00.000Z',
+    appVersion: '2.4.4',
+    sourceMode: 'installed',
+  });
+  const stagedDatabase = new Database(path.join(stagingDirectory, 'elec.db'), { readonly: true });
+  assert.equal(
+    stagedDatabase
+      .prepare("SELECT value FROM settings WHERE key = 'tuya_access_secret'")
+      .pluck()
+      .get(),
+    'secret-inexportable',
+  );
+  stagedDatabase.close();
+  assert.deepEqual(
+    JSON.parse(fs.readFileSync(path.join(stagingDirectory, 'desktop-preferences.json'), 'utf8')),
+    { automaticUpdates: true, mode: 'server' },
+  );
+
+  requestServerMigration(markerPath);
+  const result = performPendingServerMigration({
+    markerPath,
+    stagingDirectory,
+    dataDirectory: targetDirectory,
+    now: new Date('2026-08-15T11:00:00.000Z'),
+  });
+  assert.equal(result.requested, true);
+  assert.equal(result.backupPath, `${targetDirectory}-before-import-20260815T110000Z`);
+  assert.equal(
+    fs.readFileSync(path.join(result.backupPath, 'current.txt'), 'utf8'),
+    'installation actuelle',
+  );
+  assert.equal(fs.existsSync(path.join(targetDirectory, 'elec.db')), true);
+  assert.equal(fs.existsSync(markerPath), false);
+});
+
+test('la migration annulée ou incomplète ne touche jamais aux données actives', (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'wattelier-migration-safe-test-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const markerPath = path.join(directory, '.request');
+  const stagingDirectory = path.join(directory, '.staging');
+  const dataDirectory = path.join(directory, 'app-data');
+  fs.mkdirSync(dataDirectory);
+  fs.writeFileSync(path.join(dataDirectory, 'keep.txt'), 'préservé');
+
+  assert.deepEqual(performPendingServerMigration({ markerPath, stagingDirectory, dataDirectory }), {
+    requested: false,
+    backupPath: null,
+  });
+  requestServerMigration(markerPath);
+  assert.throws(
+    () => performPendingServerMigration({ markerPath, stagingDirectory, dataDirectory }),
+    /introuvable.*intactes/,
+  );
+  assert.equal(fs.readFileSync(path.join(dataDirectory, 'keep.txt'), 'utf8'), 'préservé');
+  cancelServerMigration(markerPath, stagingDirectory);
+  cancelServerMigration(markerPath, stagingDirectory);
+});
+
 test('les préférences de mise à jour sont locales, validées et écrites atomiquement', (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'wattelier-preferences-test-'));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
@@ -414,6 +536,14 @@ test('le smoke test Windows reste analysable et attend la libération des exécu
   assert.match(smokeScript, /Confirm-WattelierStaysRunning/);
   assert.match(smokeScript, /Start-Sleep -Seconds 2/);
   assert.match(smokeScript, /for \(\$attempt = 1; \$attempt -le 10; \$attempt\+\+\)/);
+});
+
+test('le script de paquet Electron passe x64 comme architecture', () => {
+  const packageJson = JSON.parse(
+    fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+  );
+  assert.match(packageJson.scripts['desktop:dir'], /--win --x64$/);
+  assert.doesNotMatch(packageJson.scripts['desktop:dir'], /--win x64/);
 });
 
 test('importe une ancienne base elec.db sans modifier la source', async (t) => {

@@ -20,6 +20,13 @@ import {
 } from './connection-store.js';
 import { importLegacyDatabase } from './legacy-import.js';
 import { readOpenAtLogin, updateOpenAtLogin } from './login-item.js';
+import {
+  cancelServerMigration,
+  exportServerMigration,
+  performPendingServerMigration,
+  requestServerMigration,
+  stageServerMigration,
+} from './migration.js';
 import { desktopRuntimeInfo, isTrustedDesktopUrl, requestSingleInstance } from './policy.js';
 import { readDesktopPreferences, writeDesktopPreferences } from './preferences.js';
 import { cancelApplicationReset, performPendingReset, requestApplicationReset } from './reset.js';
@@ -111,6 +118,84 @@ async function confirmApplicationReset() {
   return { reset: true };
 }
 
+function migrationFilename() {
+  return `Wattelier-${new Date().toISOString().slice(0, 10)}.wattelier-backup`;
+}
+
+async function exportMigration(passphrase) {
+  const selected = await dialog.showSaveDialog(mainWindow, {
+    title: 'Sauvegarder le serveur Wattelier',
+    defaultPath: migrationFilename(),
+    filters: [{ name: 'Sauvegarde chiffrée Wattelier', extensions: ['wattelier-backup'] }],
+    properties: ['createDirectory', 'showOverwriteConfirmation'],
+  });
+  if (selected.canceled || !selected.filePath) return { exported: false };
+  const serverModule = await import('../server/index.js');
+  const result = await exportServerMigration({
+    destination: selected.filePath,
+    passphrase,
+    dataDirectory: runtimePaths.dataDirectory,
+    preferencesPath: runtimePaths.preferencesPath,
+    appVersion: app.getVersion(),
+    portable: runtimePaths.portable,
+    backupDatabase: serverModule.backupDatabase,
+  });
+  return { exported: true, filename: path.basename(result.destination) };
+}
+
+async function importMigration(passphrase) {
+  const selected = await dialog.showOpenDialog(mainWindow, {
+    title: 'Restaurer un serveur Wattelier',
+    filters: [{ name: 'Sauvegarde chiffrée Wattelier', extensions: ['wattelier-backup'] }],
+    properties: ['openFile'],
+  });
+  if (selected.canceled || selected.filePaths.length !== 1) return { imported: false };
+
+  const details = await stageServerMigration({
+    source: selected.filePaths[0],
+    passphrase,
+    stagingDirectory: runtimePaths.migrationStagingDirectory,
+  });
+  const createdAt = new Intl.DateTimeFormat('fr-FR', {
+    dateStyle: 'long',
+    timeStyle: 'short',
+  }).format(new Date(details.createdAt));
+  const choice = await dialog.showMessageBox(mainWindow, {
+    type: 'warning',
+    title: 'Restaurer le serveur Wattelier',
+    message: `Remplacer les données actuelles par la sauvegarde du ${createdAt} ?`,
+    detail:
+      'Wattelier va arrêter la collecte et redémarrer. Les données actuelles seront déplacées dans un dossier daté récupérable. Tailscale étant lié à ce PC, vous devrez le configurer ici puis générer un nouveau jeton de connexion distant.',
+    buttons: ['Restaurer et redémarrer', 'Annuler'],
+    defaultId: 1,
+    cancelId: 1,
+    noLink: true,
+  });
+  if (choice.response !== 0) {
+    cancelServerMigration(
+      runtimePaths.migrationRequestPath,
+      runtimePaths.migrationStagingDirectory,
+    );
+    return { imported: false };
+  }
+
+  cancelApplicationReset(runtimePaths.resetRequestPath);
+  requestServerMigration(runtimePaths.migrationRequestPath);
+  try {
+    await stopServer?.();
+  } catch (error) {
+    cancelServerMigration(
+      runtimePaths.migrationRequestPath,
+      runtimePaths.migrationStagingDirectory,
+    );
+    throw error;
+  }
+  quitting = true;
+  app.relaunch({ args: process.argv.slice(1).filter((argument) => argument !== '--hidden') });
+  app.quit();
+  return { imported: true };
+}
+
 function registerDesktopBridge() {
   ipcMain.handle('wattelier:get-runtime-info', (event) => {
     if (!isTrustedSender(event)) throw new Error('Origine non autorisée');
@@ -170,6 +255,18 @@ function registerDesktopBridge() {
       throw new Error('Origine non autorisée');
     }
     return confirmApplicationReset();
+  });
+  ipcMain.handle('wattelier:export-migration', async (event, passphrase) => {
+    if (!isTrustedSender(event) || applicationMode !== 'server') {
+      throw new Error('Origine non autorisée');
+    }
+    return exportMigration(passphrase);
+  });
+  ipcMain.handle('wattelier:import-migration', async (event, passphrase) => {
+    if (!isTrustedSender(event) || applicationMode !== 'server') {
+      throw new Error('Origine non autorisée');
+    }
+    return importMigration(passphrase);
   });
 }
 
@@ -440,10 +537,29 @@ async function startApplication() {
     portableDirectory,
     userDataDirectory: app.getPath('userData'),
   });
+  const completedMigration = performPendingServerMigration({
+    markerPath: runtimePaths.migrationRequestPath,
+    stagingDirectory: runtimePaths.migrationStagingDirectory,
+    dataDirectory: runtimePaths.dataDirectory,
+  });
   const completedReset = performPendingReset({
     markerPath: runtimePaths.resetRequestPath,
     dataDirectory: runtimePaths.dataDirectory,
   });
+  if (completedMigration.requested) {
+    await dialog.showMessageBox({
+      type: 'info',
+      title: 'Serveur Wattelier restauré',
+      message: 'Les données et la configuration ont été restaurées.',
+      detail: `${
+        completedMigration.backupPath
+          ? `L’installation remplacée reste récupérable dans :\n${completedMigration.backupPath}\n\n`
+          : ''
+      }Configurez Tailscale sur ce PC, puis générez un nouveau jeton de connexion distant dans Réglages.`,
+      buttons: ['Continuer'],
+      noLink: true,
+    });
+  }
   if (completedReset.requested && process.env.WATTELIER_SKIP_LEGACY_IMPORT !== '1') {
     await dialog.showMessageBox({
       type: 'info',

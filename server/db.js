@@ -17,6 +17,11 @@ export const db = new Database(path.join(DATA_DIR, 'elec.db'));
 db.pragma('journal_mode = WAL');
 db.pragma('busy_timeout = 5000');
 
+/** Crée un instantané SQLite cohérent pendant que la collecte continue. */
+export async function backupDatabase(destination) {
+  await db.backup(destination);
+}
+
 db.exec(`
 CREATE TABLE IF NOT EXISTS devices (
   id        TEXT PRIMARY KEY,

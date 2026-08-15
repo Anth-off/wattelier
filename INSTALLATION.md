@@ -56,6 +56,32 @@ Au premier lancement, **les deux éditions** (installateur et portable) proposen
 La connexion distante est enregistrée avec le chiffrement Windows. Le client n'accepte qu'une
 adresse HTTPS encodée dans le jeton et ne charge aucune autre origine.
 
+## Déplacer temporairement le serveur sur un autre PC
+
+Cette procédure fonctionne dans les deux sens et entre les éditions installée et portable :
+
+1. sur le PC actuel, ouvrez **Réglages → Application Windows → Changer temporairement de PC** ;
+2. choisissez **Sauvegarder ce serveur**, définissez un mot de passe unique d’au moins 12 caractères
+   et enregistrez le fichier `.wattelier-backup` ;
+3. transférez ce fichier vers l’autre PC par un moyen de confiance, sans envoyer le mot de passe par
+   le même canal ;
+4. installez ou lancez Wattelier sur l’autre PC, créez le serveur local, puis choisissez **Restaurer
+   sur ce PC** dans la même section ;
+5. sélectionnez le fichier, saisissez son mot de passe et confirmez le redémarrage.
+
+L’archive AES-256 contient un instantané SQLite cohérent, les relevés, les appareils et la
+configuration, y compris les secrets des connecteurs. Elle ne contient ni journaux ni connexion de
+client distant liée au chiffrement Windows. Wattelier vérifie l’authenticité de l’archive, ses sommes
+SHA-256 et l’intégrité SQLite avant de toucher aux données actives. Lors de la restauration, les
+données remplacées sont conservées dans un dossier `app-data-before-import-<date>` ou
+`Wattelier-data-before-import-<date>` permettant un retour manuel en cas de besoin.
+
+Tailscale, le pare-feu et le démarrage avec Windows appartiennent à la machine. Configurez donc
+Tailscale sur le PC temporaire, puis générez un nouveau jeton de connexion distant. Pour revenir au
+PC d’origine, créez une nouvelle sauvegarde sur le PC temporaire et répétez la restauration dans
+l’autre sens. Ne perdez pas le mot de passe : Wattelier ne l’enregistre pas et ne peut pas le
+récupérer.
+
 ## Vérifier le téléchargement
 
 Téléchargez aussi `SHA256SUMS.txt`, puis utilisez PowerShell :

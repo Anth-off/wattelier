@@ -880,6 +880,104 @@ form.settings textarea,
   margin: 0;
 }
 
+.migration-section {
+  margin-top: 22px;
+  padding: 20px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+}
+
+.migration-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.migration-heading > div {
+  min-width: 0;
+}
+
+.migration-heading h3 {
+  margin: 0 0 5px;
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.migration-heading .note {
+  max-width: 68ch;
+  margin: 0;
+}
+
+.security-badge {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border-radius: 999px;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.migration-actions,
+.migration-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.migration-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 17px;
+}
+
+.migration-form > p,
+.migration-form-actions {
+  grid-column: 1 / -1;
+}
+
+.migration-form > p {
+  margin: 0;
+  color: var(--ink2);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.migration-form label {
+  min-width: 0;
+}
+
+.migration-form small {
+  display: block;
+  margin-top: 5px;
+  color: var(--ink2);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.migration-caveat,
+.migration-success {
+  margin: 16px 0 0;
+  padding: 11px 13px;
+  border-radius: 10px;
+  color: var(--ink2);
+  background: var(--surface);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.migration-success {
+  color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 10%, var(--surface));
+}
+
+.migration-section > .form-error {
+  margin-bottom: 0;
+}
+
 .btn.secondary:hover {
   color: var(--accent-strong);
   border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
@@ -1265,6 +1363,23 @@ form.settings textarea,
 }
 
 @media (max-width: 560px) {
+  .migration-section {
+    padding: 16px;
+  }
+
+  .migration-heading {
+    flex-direction: column;
+  }
+
+  .migration-form {
+    grid-template-columns: 1fr;
+  }
+
+  .migration-actions .btn,
+  .migration-form-actions .btn {
+    width: 100%;
+  }
+
   .metric-grid,
   .cards,
   .event-grid,

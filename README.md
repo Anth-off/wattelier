@@ -47,6 +47,7 @@ Wattelier peut importer l’ancien fichier `data/elec.db`, puis configure les so
 - application Windows avec zone de notification et collecte en arrière-plan.
 - application SwiftUI native pour iPhone et iPad, compilée et livrée par GitHub Actions.
 - réinitialisation guidée avec sauvegarde récupérable des données précédentes.
+- transfert aller-retour du serveur par archive chiffrée entre éditions installée et portable.
 
 La puissance instantanée affichée est celle des prises mesurées. Wattelier ne présente jamais
 cette valeur comme la puissance globale du logement et n’additionne jamais les données Linky aux

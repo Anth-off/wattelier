@@ -517,6 +517,8 @@ export async function stopServer() {
   await new Promise((resolve) => server.close(resolve));
 }
 
+export { backupDatabase } from './db.js';
+
 const isDirectRun = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (isDirectRun) {
   startServer().catch((error) => {

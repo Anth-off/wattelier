@@ -35,8 +35,13 @@ d’installation automatique réside dans `desktop-preferences.json`, à côté 
 locales. `desktop/tailscale.js` détecte Tailscale et peut activer Tailscale Serve vers le serveur
 local ; cette intégration reste facultative. `desktop/reset.js` enregistre une demande minimale hors
 du dossier de données ; au redémarrage suivant, avant l’ouverture de SQLite et des journaux, ce
-dossier est renommé en sauvegarde datée. `server/index.js` expose l'API, le flux SSE et le build statique. `server/db.js`
-possède le schéma SQLite et les migrations additives. `server/stats.js` contient les agrégations.
+dossier est renommé en sauvegarde datée. `desktop/migration.js` produit une archive serveur
+compressée, chiffrée par AES-256-GCM avec une clé dérivée par scrypt et vérifiée par sommes SHA-256
+et `PRAGMA integrity_check`. L’import est préparé dans un dossier voisin, puis appliqué avant
+l’ouverture de SQLite ; le dossier remplacé est conservé et un échec de déplacement déclenche un
+retour arrière. Tailscale et la connexion client DPAPI, propres à la machine, ne sont pas inclus.
+`server/index.js` expose l'API, le flux SSE et le build statique. `server/db.js` possède le schéma
+SQLite, les migrations additives et la création d’instantanés en ligne. `server/stats.js` contient les agrégations.
 `server/linky.js` gère la synchronisation et le rattrapage. `server/sonoff/` sépare cloud,
 découverte LAN et cryptographie. `server/omajin/` contient le client OpenAPI Tuya signé, la
 normalisation des points de données et la collecte OSP-FR-01. `web/src/` contient l'interface React

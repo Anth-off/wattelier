@@ -48,6 +48,11 @@ test('onboarding, connexion, navigation, thèmes et responsive', async ({ page, 
           serverUrl: 'https://pc.maison.ts.net',
         };
       },
+      exportMigration: async () => ({
+        exported: true,
+        filename: 'Wattelier-2026-08-15.wattelier-backup',
+      }),
+      importMigration: async () => ({ imported: false }),
       resetApplication: async () => ({ reset: false }),
     };
   });
@@ -115,6 +120,23 @@ test('onboarding, connexion, navigation, thèmes et responsive', async ({ page, 
   await expect(page.getByRole('heading', { name: 'Prises Omajin OSP-FR-01 (Tuya)' })).toBeVisible();
   await expect(page.getByLabel('Access ID Tuya')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Application Windows' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Changer temporairement de PC' })).toBeVisible();
+  await page.getByRole('button', { name: 'Sauvegarder ce serveur' }).click();
+  await page.getByLabel('Mot de passe de la sauvegarde').fill('trop-court');
+  await page.getByLabel('Confirmer le mot de passe').fill('trop-court');
+  await page.getByRole('button', { name: 'Créer la sauvegarde chiffrée' }).click();
+  await expect(page.getByRole('alert')).toContainText('12 caractères');
+  await page.getByLabel('Mot de passe de la sauvegarde').fill('phrase-secrete-solide');
+  await page.getByLabel('Confirmer le mot de passe').fill('phrase-secrete-differente');
+  await page.getByRole('button', { name: 'Créer la sauvegarde chiffrée' }).click();
+  await expect(page.getByRole('alert')).toContainText('ne correspondent pas');
+  await page.getByLabel('Confirmer le mot de passe').fill('phrase-secrete-solide');
+  await page.getByRole('button', { name: 'Créer la sauvegarde chiffrée' }).click();
+  await expect(page.getByRole('status')).toContainText('Wattelier-2026-08-15.wattelier-backup');
+  await page.getByRole('button', { name: 'Restaurer sur ce PC' }).click();
+  await page.getByLabel('Mot de passe de la sauvegarde').fill('phrase-secrete-solide');
+  await page.getByRole('button', { name: 'Choisir et restaurer la sauvegarde' }).click();
+  await expect(page.getByRole('status')).toContainText('aucune donnée n’a été modifiée');
   const openAtLogin = page.getByRole('switch', {
     name: 'Démarrer Wattelier avec Windows',
   });

@@ -18,6 +18,12 @@ export default function Settings({ status }) {
   const [tailscaleError, setTailscaleError] = useState('');
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [updateMessage, setUpdateMessage] = useState('');
+  const [migrationMode, setMigrationMode] = useState('');
+  const [migrationPassphrase, setMigrationPassphrase] = useState('');
+  const [migrationConfirmation, setMigrationConfirmation] = useState('');
+  const [migrationBusy, setMigrationBusy] = useState(false);
+  const [migrationMessage, setMigrationMessage] = useState('');
+  const [migrationError, setMigrationError] = useState('');
   const [resetting, setResetting] = useState(false);
   const [resetError, setResetError] = useState('');
 
@@ -172,6 +178,49 @@ export default function Settings({ status }) {
     }
   };
 
+  const closeMigration = () => {
+    if (migrationBusy) return;
+    setMigrationMode('');
+    setMigrationPassphrase('');
+    setMigrationConfirmation('');
+    setMigrationError('');
+  };
+
+  const runMigration = async (event) => {
+    event.preventDefault();
+    setMigrationError('');
+    setMigrationMessage('');
+    if (migrationPassphrase.length < 12) {
+      setMigrationError('Choisissez un mot de passe d’au moins 12 caractères.');
+      return;
+    }
+    if (migrationMode === 'export' && migrationPassphrase !== migrationConfirmation) {
+      setMigrationError('Les deux mots de passe ne correspondent pas.');
+      return;
+    }
+    setMigrationBusy(true);
+    try {
+      const result =
+        migrationMode === 'export'
+          ? await window.wattelierDesktop.exportMigration(migrationPassphrase)
+          : await window.wattelierDesktop.importMigration(migrationPassphrase);
+      if (result.exported) {
+        setMigrationMessage(
+          `${result.filename} est prêt. Conservez le fichier et son mot de passe séparément.`,
+        );
+        setMigrationMode('');
+      } else if (!result.imported) {
+        setMigrationMessage('Opération annulée, aucune donnée n’a été modifiée.');
+      }
+      setMigrationPassphrase('');
+      setMigrationConfirmation('');
+    } catch (error) {
+      setMigrationError(error.message || 'Le transfert sécurisé a échoué.');
+    } finally {
+      setMigrationBusy(false);
+    }
+  };
+
   return (
     <>
       {desktopInfo && (
@@ -255,6 +304,118 @@ export default function Settings({ status }) {
             </button>
             {updateMessage && <span className="note">{updateMessage}</span>}
           </div>
+          {desktopInfo.applicationMode === 'server' && (
+            <section className="migration-section" aria-labelledby="migration-title">
+              <div className="migration-heading">
+                <div>
+                  <h3 id="migration-title">Changer temporairement de PC</h3>
+                  <p className="note">
+                    Créez un fichier chiffré qui réunit l’historique, les appareils, les relevés et
+                    la configuration du serveur. Vous pourrez refaire le trajet inverse plus tard.
+                  </p>
+                </div>
+                <span className="security-badge">Chiffrement AES-256</span>
+              </div>
+              {!migrationMode && (
+                <div className="migration-actions">
+                  <button
+                    className="btn"
+                    type="button"
+                    onClick={() => {
+                      setMigrationMode('export');
+                      setMigrationError('');
+                      setMigrationMessage('');
+                    }}
+                  >
+                    Sauvegarder ce serveur
+                  </button>
+                  <button
+                    className="btn secondary"
+                    type="button"
+                    onClick={() => {
+                      setMigrationMode('import');
+                      setMigrationError('');
+                      setMigrationMessage('');
+                    }}
+                  >
+                    Restaurer sur ce PC
+                  </button>
+                </div>
+              )}
+              {migrationMode && (
+                <form className="migration-form" onSubmit={runMigration} noValidate>
+                  <p>
+                    {migrationMode === 'export'
+                      ? 'Le mot de passe protège les secrets Linky, eWeLink et Tuya présents dans la sauvegarde.'
+                      : 'Sélectionnez ensuite le fichier créé sur l’autre PC. Les données actuelles seront gardées dans un dossier de secours.'}
+                  </p>
+                  <label>
+                    Mot de passe de la sauvegarde
+                    <input
+                      type="password"
+                      value={migrationPassphrase}
+                      onChange={(event) => setMigrationPassphrase(event.target.value)}
+                      minLength="12"
+                      maxLength="256"
+                      autoComplete="new-password"
+                      disabled={migrationBusy}
+                      required
+                    />
+                    <small>12 caractères minimum. Il n’est jamais enregistré par Wattelier.</small>
+                  </label>
+                  {migrationMode === 'export' && (
+                    <label>
+                      Confirmer le mot de passe
+                      <input
+                        type="password"
+                        value={migrationConfirmation}
+                        onChange={(event) => setMigrationConfirmation(event.target.value)}
+                        minLength="12"
+                        maxLength="256"
+                        autoComplete="new-password"
+                        disabled={migrationBusy}
+                        required
+                      />
+                    </label>
+                  )}
+                  <div className="migration-form-actions">
+                    <button className="btn" type="submit" disabled={migrationBusy}>
+                      {migrationBusy
+                        ? migrationMode === 'export'
+                          ? 'Chiffrement en cours…'
+                          : 'Vérification en cours…'
+                        : migrationMode === 'export'
+                          ? 'Créer la sauvegarde chiffrée'
+                          : 'Choisir et restaurer la sauvegarde'}
+                    </button>
+                    <button
+                      className="btn secondary"
+                      type="button"
+                      onClick={closeMigration}
+                      disabled={migrationBusy}
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </form>
+              )}
+              <p className="migration-caveat">
+                Tailscale et le lancement avec Windows restent propres à chaque machine. Après une
+                restauration, configurez Tailscale sur le nouveau PC et générez un nouveau jeton de
+                connexion distant.
+              </p>
+              {migrationMessage && (
+                <p className="migration-success" role="status">
+                  {migrationMessage}
+                </p>
+              )}
+              {migrationError && (
+                <p className="form-error" role="alert">
+                  {migrationError}
+                </p>
+              )}
+            </section>
+          )}
           {desktopInfo.applicationMode === 'server' && (
             <div className="danger-zone">
               <div>

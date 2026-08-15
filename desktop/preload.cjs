@@ -8,5 +8,9 @@ contextBridge.exposeInMainWorld('wattelierDesktop', {
   checkForUpdates: () => ipcRenderer.invoke('wattelier:check-for-updates'),
   getTailscaleStatus: () => ipcRenderer.invoke('wattelier:tailscale-status'),
   enableTailscale: () => ipcRenderer.invoke('wattelier:tailscale-enable'),
+  exportMigration: (passphrase) =>
+    ipcRenderer.invoke('wattelier:export-migration', String(passphrase)),
+  importMigration: (passphrase) =>
+    ipcRenderer.invoke('wattelier:import-migration', String(passphrase)),
   resetApplication: () => ipcRenderer.invoke('wattelier:reset-application'),
 });

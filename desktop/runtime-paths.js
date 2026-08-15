@@ -15,6 +15,8 @@ export function resolveRuntimePaths({ portableDirectory, userDataDirectory }) {
     preferencesPath: path.join(root, 'desktop-preferences.json'),
     connectionPath: path.join(root, 'desktop-connection.bin'),
     resetRequestPath: path.join(resetRoot, '.wattelier-reset-request'),
+    migrationRequestPath: path.join(resetRoot, '.wattelier-migration-request'),
+    migrationStagingDirectory: path.join(resetRoot, '.wattelier-migration-staging'),
   };
 }
 
