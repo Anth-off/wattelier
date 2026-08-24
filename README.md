@@ -2,10 +2,10 @@
 
 ![Wattelier](web/public/brand/wattelier-wordmark.svg)
 
-[![CI](https://github.com/N0thyTVOff/wattelier/actions/workflows/ci.yml/badge.svg)](https://github.com/N0thyTVOff/wattelier/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/N0thyTVOff/wattelier?display_name=tag)](https://github.com/N0thyTVOff/wattelier/releases)
-[![Licence AGPL-3.0](https://img.shields.io/github/license/N0thyTVOff/wattelier)](LICENSE)
-[![Issues](https://img.shields.io/github/issues/N0thyTVOff/wattelier)](https://github.com/N0thyTVOff/wattelier/issues)
+[![CI](https://github.com/Anth-off/wattelier/actions/workflows/ci.yml/badge.svg)](https://github.com/Anth-off/wattelier/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Anth-off/wattelier?display_name=tag)](https://github.com/Anth-off/wattelier/releases)
+[![Licence AGPL-3.0](https://img.shields.io/github/license/Anth-off/wattelier)](LICENSE)
+[![Issues](https://img.shields.io/github/issues/Anth-off/wattelier)](https://github.com/Anth-off/wattelier/issues)
 
 **Votre énergie, enfin claire.** Wattelier est une application locale et auto-hébergée qui réunit
 les consommations Linky obtenues via Conso API, les prises Sonoff/eWeLink et Omajin/Tuya, les
@@ -18,7 +18,7 @@ machine.
 ## Installer Wattelier sur Windows
 
 Téléchargez l’un des deux fichiers x64 depuis la
-[dernière release](https://github.com/N0thyTVOff/wattelier/releases) :
+[dernière release](https://github.com/Anth-off/wattelier/releases) :
 
 - `Wattelier-Setup-vX.Y.Z-x64.exe` installe l’application, les raccourcis et le démarrage automatique ;
 - `Wattelier-Portable-vX.Y.Z-x64.exe` fonctionne sans installation et conserve ses données dans
@@ -58,7 +58,7 @@ données des prises.
 Prérequis : Node.js 22 et npm 10 ou ultérieur.
 
 ```bash
-git clone https://github.com/N0thyTVOff/wattelier.git
+git clone https://github.com/Anth-off/wattelier.git
 cd wattelier
 npm ci
 npm run build
@@ -128,9 +128,9 @@ archives de sources générées automatiquement par GitHub restent disponibles p
 ## Sécurité et licence
 
 Signalez les vulnérabilités avec le
-[formulaire privé GitHub](https://github.com/N0thyTVOff/wattelier/security/advisories/new), jamais
+[formulaire privé GitHub](https://github.com/Anth-off/wattelier/security/advisories/new), jamais
 dans une issue publique. Consultez [SECURITY.md](SECURITY.md).
 
-Copyright © 2026 N0thyTVOff. Wattelier est distribué sous
+Copyright © 2026 Anth-off. Wattelier est distribué sous
 [GNU Affero General Public License v3.0 uniquement](LICENSE), sans garantie. Consultez
 [NOTICE](NOTICE) pour l’adresse officielle du dépôt.

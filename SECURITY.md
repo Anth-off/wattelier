@@ -3,7 +3,7 @@
 ## Signaler une vulnérabilité
 
 Utilisez exclusivement le
-[signalement privé GitHub](https://github.com/N0thyTVOff/wattelier/security/advisories/new). Ne
+[signalement privé GitHub](https://github.com/Anth-off/wattelier/security/advisories/new). Ne
 publiez aucune faille, clé ou donnée personnelle dans une issue. Indiquez la version, l'impact, une
 reproduction minimale anonymisée et une piste de correction. Un accusé de réception est visé sous
 sept jours, sans garantie de délai de correction.

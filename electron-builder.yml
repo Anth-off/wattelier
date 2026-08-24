@@ -40,6 +40,6 @@ portable:
   requestExecutionLevel: user
 publish:
   provider: github
-  owner: N0thyTVOff
+  owner: Anth-off
   repo: wattelier
   releaseType: release
