@@ -24,7 +24,7 @@ export function githubReleaseUrl(value) {
   try {
     const url = new URL(String(value));
     if (url.protocol !== 'https:' || url.hostname !== 'github.com') return null;
-    if (!url.pathname.startsWith('/N0thyTVOff/wattelier/releases/')) return null;
+    if (!url.pathname.startsWith('/Anth-off/wattelier/releases/')) return null;
     return url.href;
   } catch {
     return null;

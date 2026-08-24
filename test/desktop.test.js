@@ -274,7 +274,7 @@ test('le bureau relie la détection de mise à jour à une source GitHub sûre',
   assert.match(main, /wattelier:set-automatic-updates/);
   assert.match(main, /wattelier:check-for-updates/);
   assert.match(main, /setTimeout\(\(\) => updater\.checkForUpdates\(\), 10_000\)/);
-  assert.match(updater, /api\.github\.com\/repos\/N0thyTVOff\/wattelier\/releases\/latest/);
+  assert.match(updater, /api\.github\.com\/repos\/Anth-off\/wattelier\/releases\/latest/);
   assert.match(updater, /autoUpdater\.autoDownload = false/);
   assert.match(updater, /autoUpdater\.quitAndInstall\(false, true\)/);
   assert.match(builder, /provider: github/);
@@ -514,11 +514,11 @@ test('la détection de version accepte les tags Wattelier et verrouille les lien
   assert.equal(isNewerWattelierVersion('2.1.9', '2.1.9'), false);
   assert.equal(isNewerWattelierVersion('invalide', '2.1.9'), false);
   assert.equal(
-    githubReleaseUrl('https://github.com/N0thyTVOff/wattelier/releases/tag/wattelier-v2.2.0'),
-    'https://github.com/N0thyTVOff/wattelier/releases/tag/wattelier-v2.2.0',
+    githubReleaseUrl('https://github.com/Anth-off/wattelier/releases/tag/wattelier-v2.2.0'),
+    'https://github.com/Anth-off/wattelier/releases/tag/wattelier-v2.2.0',
   );
-  assert.equal(githubReleaseUrl('http://github.com/N0thyTVOff/wattelier/releases/latest'), null);
-  assert.equal(githubReleaseUrl('https://example.com/N0thyTVOff/wattelier/releases/latest'), null);
+  assert.equal(githubReleaseUrl('http://github.com/Anth-off/wattelier/releases/latest'), null);
+  assert.equal(githubReleaseUrl('https://example.com/Anth-off/wattelier/releases/latest'), null);
   assert.equal(githubReleaseUrl('adresse invalide'), null);
 });
 

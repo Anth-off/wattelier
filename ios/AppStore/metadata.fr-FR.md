@@ -45,19 +45,19 @@ Wattelier ne remplace ni un dispositif de sécurité électrique ni la facture d
 
 ## URL d’assistance
 
-https://github.com/N0thyTVOff/wattelier/issues
+https://github.com/Anth-off/wattelier/issues
 
 ## URL marketing
 
-https://github.com/N0thyTVOff/wattelier
+https://github.com/Anth-off/wattelier
 
 ## URL de confidentialité
 
-https://github.com/N0thyTVOff/wattelier/blob/main/PRIVACY.md
+https://github.com/Anth-off/wattelier/blob/main/PRIVACY.md
 
 ## Copyright
 
-2026 N0thyTVOff
+2026 Anth-off
 
 ## Couverture géographique
 

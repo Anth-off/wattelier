@@ -30,7 +30,7 @@ ce serveur par son administrateur.
 ## Contact et code source
 
 Les questions et demandes peuvent être déposées dans les issues publiques du projet :
-https://github.com/N0thyTVOff/wattelier/issues
+https://github.com/Anth-off/wattelier/issues
 
 Le code source est disponible sous licence AGPL-3.0 :
-https://github.com/N0thyTVOff/wattelier
+https://github.com/Anth-off/wattelier

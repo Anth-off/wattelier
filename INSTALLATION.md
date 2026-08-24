@@ -2,7 +2,7 @@
 
 ## Choisir une édition Windows
 
-La page [Releases](https://github.com/N0thyTVOff/wattelier/releases) contient deux éditions x64.
+La page [Releases](https://github.com/Anth-off/wattelier/releases) contient deux éditions x64.
 
 ### Installateur
 

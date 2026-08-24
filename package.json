@@ -1,11 +1,11 @@
 {
   "name": "wattelier",
   "productName": "Wattelier",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "Votre énergie, enfin claire — suivi local Linky, Sonoff/eWeLink et Omajin/Tuya",
   "private": true,
   "license": "AGPL-3.0-only",
-  "author": "N0thyTVOff",
+  "author": "Anth-off",
   "engines": {
     "node": ">=22 <25",
     "npm": ">=10"

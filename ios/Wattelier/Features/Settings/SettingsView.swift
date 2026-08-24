@@ -36,7 +36,7 @@ struct SettingsView: View {
                 Label("Aucun compte Wattelier", systemImage: "person.crop.circle.badge.checkmark")
                 Label("Aucun suivi publicitaire", systemImage: "eye.slash.fill")
                 Label("Les données restent sur votre serveur", systemImage: "externaldrive.fill.badge.checkmark")
-                Link("Politique de confidentialité", destination: URL(string: "https://github.com/N0thyTVOff/wattelier/blob/main/PRIVACY.md")!)
+                Link("Politique de confidentialité", destination: URL(string: "https://github.com/Anth-off/wattelier/blob/main/PRIVACY.md")!)
             }
 
             Section {
@@ -50,7 +50,7 @@ struct SettingsView: View {
             Section("À propos") {
                 LabeledContent("Application", value: "Wattelier iOS")
                 LabeledContent("Version", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
-                Link("Code source AGPL-3.0", destination: URL(string: "https://github.com/N0thyTVOff/wattelier")!)
+                Link("Code source AGPL-3.0", destination: URL(string: "https://github.com/Anth-off/wattelier")!)
             }
         }
         .navigationTitle("Réglages")

@@ -2,8 +2,8 @@ import electronUpdater from 'electron-updater';
 import { githubReleaseUrl, isNewerWattelierVersion } from './update-policy.js';
 
 const { autoUpdater } = electronUpdater;
-const LATEST_RELEASE_API = 'https://api.github.com/repos/N0thyTVOff/wattelier/releases/latest';
-const RELEASES_URL = 'https://github.com/N0thyTVOff/wattelier/releases/latest';
+const LATEST_RELEASE_API = 'https://api.github.com/repos/Anth-off/wattelier/releases/latest';
+const RELEASES_URL = 'https://github.com/Anth-off/wattelier/releases/latest';
 
 function errorMessage(error) {
   return error instanceof Error ? error.message : String(error);

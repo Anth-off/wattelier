@@ -1,7 +1,7 @@
 # Contribuer
 
 Les signalements et propositions documentés via les formulaires d'issues sont bienvenus. La
-gouvernance actuelle prévoit que le mainteneur `@N0thyTVOff` réalise et fusionne les PR. Une PR
+gouvernance actuelle prévoit que le mainteneur `@Anth-off` réalise et fusionne les PR. Une PR
 externe depuis un fork reste possible techniquement, mais n'accorde ni accès en écriture, ni accès
 aux secrets, et ses workflows nécessitent l'approbation du mainteneur.
 
