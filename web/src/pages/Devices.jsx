@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Chart from '../Chart.jsx';
-import { api, post, fmtKwh, fmtEur, localDate, daysAgo } from '../api.js';
+import { api, post, fmtKwh, fmtEur, fmtDate, localDate, daysAgo } from '../api.js';
 import { chartTheme, baseAxes } from '../theme.js';
 
 const PERIODS = [
@@ -14,11 +14,21 @@ function periodDates(p) {
   const today = localDate();
   if (p === 'today') return [today, today];
   if (p === 'month') return [today.slice(0, 8) + '01', today];
-  return [daysAgo(Number(p)), today];
+  return [daysAgo(Number(p) - 1), today];
 }
 
 export default function Devices() {
   const [period, setPeriod] = useState('7');
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customMode, setCustomMode] = useState('range');
+  const [customStart, setCustomStart] = useState(daysAgo(6));
+  const [customEnd, setCustomEnd] = useState(localDate());
+  const [appliedCustomRange, setAppliedCustomRange] = useState({
+    start: daysAgo(6),
+    end: localDate(),
+  });
+  const [periodError, setPeriodError] = useState('');
+  const [loadError, setLoadError] = useState('');
   const [data, setData] = useState(null);
   const [allDevices, setAllDevices] = useState([]);
   const [historyRows, setHistoryRows] = useState([]);
@@ -27,28 +37,39 @@ export default function Devices() {
   const [dayDate, setDayDate] = useState(localDate());
   const [dayRows, setDayRows] = useState([]);
   const [edit, setEdit] = useState({}); // id → {name, room}
+  const loadSequence = useRef(0);
+
+  const selectedDates =
+    period === 'custom' ? [appliedCustomRange.start, appliedCustomRange.end] : periodDates(period);
 
   const load = () => {
-    const [start, end] = periodDates(period);
-    api(`breakdown?start=${start}&end=${end}`)
-      .then(setData)
-      .catch(() => {});
-    api('devices')
-      .then(setAllDevices)
-      .catch(() => {});
-    api(`devices/daily?start=${start}&end=${end}`)
-      .then(setHistoryRows)
-      .catch(() => {});
-    api(`devices/stats?start=${start}&end=${end}`)
-      .then(setDevStats)
-      .catch(() => {});
-    api(`profile?start=${start}&end=${end}`)
-      .then(setProfileRows)
-      .catch(() => {});
+    const sequence = ++loadSequence.current;
+    const [start, end] = selectedDates;
+    Promise.all([
+      api(`breakdown?start=${start}&end=${end}`),
+      api('devices'),
+      api(`devices/daily?start=${start}&end=${end}`),
+      api(`devices/stats?start=${start}&end=${end}`),
+      api(`profile?start=${start}&end=${end}`),
+    ])
+      .then(([nextData, devices, daily, stats, profile]) => {
+        if (sequence !== loadSequence.current) return;
+        setLoadError('');
+        setData(nextData);
+        setAllDevices(devices);
+        setHistoryRows(daily);
+        setDevStats(stats);
+        setProfileRows(profile);
+      })
+      .catch((error) => {
+        if (sequence === loadSequence.current) {
+          setLoadError(error.message || 'Impossible de charger cette période.');
+        }
+      });
   };
   useEffect(() => {
     load();
-  }, [period]);
+  }, [period, appliedCustomRange.start, appliedCustomRange.end]);
   useEffect(() => {
     api(`devices/hourly?date=${dayDate}`)
       .then(setDayRows)
@@ -61,6 +82,40 @@ export default function Devices() {
     const next = localDate(d);
     if (next <= localDate()) setDayDate(next);
   };
+
+  const choosePreset = (nextPeriod) => {
+    setPeriod(nextPeriod);
+    setCustomOpen(false);
+    setPeriodError('');
+  };
+
+  const applyCustomPeriod = (event) => {
+    event.preventDefault();
+    const today = localDate();
+    const start = customStart;
+    const end = customMode === 'single' ? customStart : customEnd;
+    if (!start || !end) {
+      setPeriodError('Choisissez toutes les dates de la période.');
+      return;
+    }
+    if (start > end) {
+      setPeriodError('La date de début doit précéder ou être égale à la date de fin.');
+      return;
+    }
+    if (end > today) {
+      setPeriodError('La période ne peut pas se terminer dans le futur.');
+      return;
+    }
+    setAppliedCustomRange({ start, end });
+    setPeriod('custom');
+    setCustomOpen(false);
+    setPeriodError('');
+  };
+
+  const periodLabel =
+    selectedDates[0] === selectedDates[1]
+      ? fmtDate(selectedDates[0])
+      : `du ${fmtDate(selectedDates[0])} au ${fmtDate(selectedDates[1])}`;
 
   const statsById = useMemo(() => new Map(devStats.map((s) => [s.id, s])), [devStats]);
 
@@ -309,11 +364,119 @@ export default function Devices() {
     <>
       <div className="filters">
         {PERIODS.map(([v, label]) => (
-          <button key={v} className={period === v ? 'active' : ''} onClick={() => setPeriod(v)}>
+          <button
+            key={v}
+            type="button"
+            className={period === v ? 'active' : ''}
+            onClick={() => choosePreset(v)}
+          >
             {label}
           </button>
         ))}
+        <button
+          type="button"
+          className={period === 'custom' ? 'active' : ''}
+          aria-expanded={customOpen}
+          aria-controls="custom-device-period"
+          onClick={() => {
+            setCustomOpen((open) => !open);
+            setPeriodError('');
+          }}
+        >
+          Période personnalisée
+        </button>
       </div>
+
+      {customOpen && (
+        <form
+          id="custom-device-period"
+          className="custom-period"
+          onSubmit={applyCustomPeriod}
+          noValidate
+        >
+          <div className="custom-period-mode" role="group" aria-label="Type de période">
+            <button
+              type="button"
+              className={customMode === 'single' ? 'active' : ''}
+              aria-pressed={customMode === 'single'}
+              onClick={() => {
+                setCustomMode('single');
+                setPeriodError('');
+              }}
+            >
+              Une date
+            </button>
+            <button
+              type="button"
+              className={customMode === 'range' ? 'active' : ''}
+              aria-pressed={customMode === 'range'}
+              onClick={() => {
+                setCustomMode('range');
+                setPeriodError('');
+              }}
+            >
+              Une plage
+            </button>
+          </div>
+          <div className="custom-period-fields">
+            <label>
+              {customMode === 'single' ? 'Date' : 'Du'}
+              <input
+                type="date"
+                value={customStart}
+                max={customMode === 'range' && customEnd ? customEnd : localDate()}
+                onChange={(event) => setCustomStart(event.target.value)}
+                required
+              />
+            </label>
+            {customMode === 'range' && (
+              <label>
+                Au
+                <input
+                  type="date"
+                  value={customEnd}
+                  min={customStart || undefined}
+                  max={localDate()}
+                  onChange={(event) => setCustomEnd(event.target.value)}
+                  required
+                />
+              </label>
+            )}
+          </div>
+          <div className="custom-period-actions">
+            <button className="btn" type="submit">
+              Afficher cette période
+            </button>
+            <button
+              className="btn secondary"
+              type="button"
+              onClick={() => {
+                setCustomOpen(false);
+                setPeriodError('');
+              }}
+            >
+              Annuler
+            </button>
+          </div>
+          {periodError && (
+            <p className="form-error" role="alert">
+              {periodError}
+            </p>
+          )}
+        </form>
+      )}
+
+      <p className="period-summary" role="status">
+        Période affichée : <b>{periodLabel}</b>
+      </p>
+      {loadError && (
+        <p className="form-error period-load-error" role="alert">
+          {loadError}{' '}
+          <button type="button" onClick={load}>
+            Réessayer
+          </button>
+        </p>
+      )}
 
       {data && measured.length === 0 && (
         <div className="empty">

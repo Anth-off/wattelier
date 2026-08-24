@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { isIsoDate, rowsToCsv } from '../server/http-utils.js';
+import { isIsoDate, isIsoDateRange, rowsToCsv } from '../server/http-utils.js';
 import { editableSettings, toPublicSettings } from '../server/public-settings.js';
 import { hashAccessToken, matchesAccessToken } from '../server/token-utils.js';
 
@@ -9,6 +9,14 @@ test('isIsoDate accepte une date civile réelle au format ISO', () => {
   assert.equal(isIsoDate('2026-02-29'), false);
   assert.equal(isIsoDate('06/08/2026'), false);
   assert.equal(isIsoDate(null), false);
+});
+
+test('isIsoDateRange accepte une date ou une plage chronologique valide', () => {
+  assert.equal(isIsoDateRange('2026-08-24', '2026-08-24'), true);
+  assert.equal(isIsoDateRange('2026-08-01', '2026-08-24'), true);
+  assert.equal(isIsoDateRange('2026-08-24', '2026-08-01'), false);
+  assert.equal(isIsoDateRange('2026-02-29', '2026-08-24'), false);
+  assert.equal(isIsoDateRange(undefined, '2026-08-24'), false);
 });
 
 test('rowsToCsv échappe les séparateurs, guillemets et formules', () => {

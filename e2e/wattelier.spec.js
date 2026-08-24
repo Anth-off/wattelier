@@ -101,6 +101,49 @@ test('onboarding, connexion, navigation, thèmes et responsive', async ({ page, 
     expect(pageErrors, pageErrors.join('\n')).toEqual([]);
     await expect(page.locator('.workspace-header h1')).toHaveText(heading);
   }
+
+  await page
+    .getByRole('navigation', { name: 'Navigation mobile' })
+    .getByRole('button', { name: 'Appareils' })
+    .click();
+  const isoDate = (offsetDays = 0) => {
+    const date = new Date();
+    date.setDate(date.getDate() + offsetDays);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  await page.getByRole('button', { name: 'Période personnalisée' }).click();
+  await page.getByRole('button', { name: 'Une date' }).click();
+  await page.getByLabel('Date', { exact: true }).fill(isoDate(-2));
+  await page.getByRole('button', { name: 'Afficher cette période' }).click();
+  await expect(page.locator('.period-summary')).toContainText(
+    new Date(`${isoDate(-2)}T12:00:00`).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }),
+  );
+  await page.getByRole('button', { name: 'Période personnalisée' }).click();
+  await page.getByRole('button', { name: 'Une plage' }).click();
+  await page.getByLabel('Du', { exact: true }).fill(isoDate(-10));
+  await page.getByLabel('Au', { exact: true }).fill(isoDate(-3));
+  await page.getByRole('button', { name: 'Afficher cette période' }).click();
+  await expect(page.locator('.period-summary')).toContainText(' au ');
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page.getByRole('button', { name: 'Période personnalisée' }).click();
+  const customPeriodLayout = await page.evaluate(() => ({
+    viewport: innerWidth,
+    body: document.body.scrollWidth,
+    html: document.documentElement.scrollWidth,
+  }));
+  expect(customPeriodLayout.body).toBeLessThanOrEqual(customPeriodLayout.viewport);
+  expect(customPeriodLayout.html).toBeLessThanOrEqual(customPeriodLayout.viewport);
+  await page
+    .getByRole('navigation', { name: 'Navigation mobile' })
+    .getByRole('button', { name: 'Réglages' })
+    .click();
   await expect(
     page.getByRole('heading', { name: 'Sécurité du serveur et application mobile' }),
   ).toBeVisible();

@@ -36,7 +36,7 @@ import {
 } from './omajin/index.js';
 import { generateDemoData, demoTick } from './demo.js';
 import * as stats from './stats.js';
-import { isIsoDate, rowsToCsv } from './http-utils.js';
+import { isIsoDate, isIsoDateRange, rowsToCsv } from './http-utils.js';
 import { editableSettings, toPublicSettings } from './public-settings.js';
 import {
   authRequired,
@@ -176,7 +176,9 @@ app.get('/api/daily', (req, res) => res.json(stats.dailySeries(Number(req.query.
 app.get('/api/day/:date', (req, res) => res.json(stats.dayDetail(req.params.date)));
 app.get('/api/breakdown', (req, res) => {
   const { start, end } = req.query;
-  if (!start || !end) return res.status(400).json({ error: 'start et end requis (YYYY-MM-DD)' });
+  if (!isIsoDateRange(start, end)) {
+    return res.status(400).json({ error: 'plage de dates invalide (YYYY-MM-DD)' });
+  }
   res.json(stats.deviceBreakdown(start, end));
 });
 app.get('/api/heatmap', (req, res) => res.json(stats.heatmap(Number(req.query.days) || 56)));
@@ -185,17 +187,23 @@ app.get('/api/readings/recent', (req, res) =>
 );
 app.get('/api/devices/daily', (req, res) => {
   const { start, end } = req.query;
-  if (!start || !end) return res.status(400).json({ error: 'start et end requis (YYYY-MM-DD)' });
+  if (!isIsoDateRange(start, end)) {
+    return res.status(400).json({ error: 'plage de dates invalide (YYYY-MM-DD)' });
+  }
   res.json(stats.devicesDaily(start, end));
 });
 app.get('/api/devices/stats', (req, res) => {
   const { start, end } = req.query;
-  if (!start || !end) return res.status(400).json({ error: 'start et end requis (YYYY-MM-DD)' });
+  if (!isIsoDateRange(start, end)) {
+    return res.status(400).json({ error: 'plage de dates invalide (YYYY-MM-DD)' });
+  }
   res.json(stats.deviceStats(start, end));
 });
 app.get('/api/profile', (req, res) => {
   const { start, end } = req.query;
-  if (!start || !end) return res.status(400).json({ error: 'start et end requis (YYYY-MM-DD)' });
+  if (!isIsoDateRange(start, end)) {
+    return res.status(400).json({ error: 'plage de dates invalide (YYYY-MM-DD)' });
+  }
   res.json(stats.hourlyProfile(start, end));
 });
 app.get('/api/advanced', (req, res) => res.json(stats.advanced()));

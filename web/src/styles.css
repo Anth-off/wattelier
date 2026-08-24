@@ -712,6 +712,92 @@ a {
   font-weight: 650;
 }
 
+.custom-period {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: -2px 0 10px;
+  padding: 16px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+}
+
+.custom-period-mode {
+  display: inline-flex;
+  align-self: center;
+  padding: 3px;
+  border-radius: 11px;
+  background: var(--surface);
+}
+
+.custom-period-mode button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--ink2);
+  background: transparent;
+  cursor: pointer;
+}
+
+.custom-period-mode button.active {
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  font-weight: 650;
+}
+
+.custom-period-fields,
+.custom-period-actions {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.custom-period-fields label {
+  display: grid;
+  gap: 5px;
+  color: var(--ink2);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.custom-period-fields input {
+  min-height: 42px;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.custom-period .form-error {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.period-summary {
+  margin: -2px 0 16px;
+  color: var(--ink2);
+  font-size: 12px;
+}
+
+.period-load-error {
+  margin-top: 0;
+}
+
+.period-load-error button {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .table-scroll {
   max-width: 100%;
   overflow-x: auto;
@@ -1363,6 +1449,34 @@ form.settings textarea,
 }
 
 @media (max-width: 560px) {
+  .custom-period {
+    align-items: stretch;
+  }
+
+  .custom-period-mode,
+  .custom-period-fields,
+  .custom-period-actions {
+    width: 100%;
+  }
+
+  .custom-period-mode button {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .custom-period-fields,
+  .custom-period-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .custom-period-fields label,
+  .custom-period-fields input,
+  .custom-period-actions .btn {
+    width: 100%;
+    min-width: 0;
+  }
+
   .migration-section {
     padding: 16px;
   }
