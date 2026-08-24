@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.0](https://github.com/N0thyTVOff/wattelier/compare/wattelier-v2.5.0...wattelier-v2.6.0) (2026-08-24)
+
+
+### Fonctionnalités
+
+* **devices:** permet de choisir une date ou une plage précise ([#58](https://github.com/N0thyTVOff/wattelier/pull/58)) ([460fdb3](https://github.com/N0thyTVOff/wattelier/commit/460fdb39999c917ded49aef24024cbea64a4a516))
+
 ## [2.5.0](https://github.com/N0thyTVOff/wattelier/compare/wattelier-v2.4.4...wattelier-v2.5.0) (2026-08-15)
 
 

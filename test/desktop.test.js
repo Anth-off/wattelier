@@ -533,6 +533,8 @@ test('le smoke test Windows reste analysable et attend la libération des exécu
     'PowerShell interprète les apostrophes typographiques comme des délimiteurs de chaîne',
   );
   assert.match(smokeScript, /WaitForExit\(5000\)/);
+  assert.match(smokeScript, /taskkill\.exe/);
+  assert.match(smokeScript, /'\/T'/);
   assert.match(smokeScript, /Confirm-WattelierStaysRunning/);
   assert.match(smokeScript, /Start-Sleep -Seconds 2/);
   assert.match(smokeScript, /for \(\$attempt = 1; \$attempt -le 10; \$attempt\+\+\)/);

@@ -68,11 +68,27 @@ function Confirm-WattelierStaysRunning([int]$Port) {
   Wait-WattelierEndpoint $Port
 }
 
+function Stop-ProcessTree([int]$ProcessId) {
+  $process = Get-Process -Id $ProcessId -ErrorAction SilentlyContinue
+  if (-not $process) { return }
+
+  $taskkill = Start-Process `
+    -FilePath (Join-Path $env:SystemRoot 'System32\taskkill.exe') `
+    -ArgumentList '/PID', $ProcessId.ToString(), '/T', '/F' `
+    -Wait `
+    -PassThru `
+    -NoNewWindow
+  if ($taskkill.ExitCode -ne 0 -and (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue)) {
+    throw "Impossible d'arrêter l'arborescence du processus Wattelier $ProcessId."
+  }
+  [void]$process.WaitForExit(5000)
+}
+
 function Stop-WattelierOnPort([int]$Port) {
   $connection = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue |
     Select-Object -First 1
   if ($connection) {
-    Stop-Process -Id $connection.OwningProcess -Force -ErrorAction SilentlyContinue
+    Stop-ProcessTree $connection.OwningProcess
   }
 }
 
@@ -80,8 +96,7 @@ function Stop-TestProcess($Process) {
   if ($null -eq $Process) { return }
   $Process.Refresh()
   if (-not $Process.HasExited) {
-    Stop-Process -Id $Process.Id -Force -ErrorAction SilentlyContinue
-    [void]$Process.WaitForExit(5000)
+    Stop-ProcessTree $Process.Id
   }
 }
 
