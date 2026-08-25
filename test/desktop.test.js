@@ -13,7 +13,11 @@ import {
   requestSingleInstance,
 } from '../desktop/policy.js';
 import { readDesktopPreferences, writeDesktopPreferences } from '../desktop/preferences.js';
-import { readOpenAtLogin, updateOpenAtLogin } from '../desktop/login-item.js';
+import {
+  readOpenAtLogin,
+  readWindowsLoginItemState,
+  updateOpenAtLogin,
+} from '../desktop/login-item.js';
 import {
   cancelServerMigration,
   exportServerMigration,
@@ -107,7 +111,7 @@ test('le démarrage Windows modifie aussi l’approbation système et vérifie s
   };
   const executablePath = 'C:\\Program Files\\Wattelier\\Wattelier.exe';
 
-  assert.equal(updateOpenAtLogin(electronApp, executablePath, true), true);
+  assert.equal(updateOpenAtLogin(electronApp, executablePath, true, null), true);
   assert.deepEqual(calls[0], {
     method: 'set',
     options: {
@@ -123,7 +127,7 @@ test('le démarrage Windows modifie aussi l’approbation système et vérifie s
     options: { path: executablePath, args: ['--hidden'] },
   });
 
-  assert.equal(updateOpenAtLogin(electronApp, executablePath, false), false);
+  assert.equal(updateOpenAtLogin(electronApp, executablePath, false, null), false);
   assert.deepEqual(calls[2], {
     method: 'set',
     options: {
@@ -143,9 +147,9 @@ test('le démarrage Windows signale un refus au lieu de laisser le bouton sans r
       return { openAtLogin: true, executableWillLaunchAtLogin: false };
     },
   };
-  assert.equal(readOpenAtLogin(refusedApp, 'Wattelier.exe'), false);
+  assert.equal(readOpenAtLogin(refusedApp, 'Wattelier.exe', null), false);
   assert.throws(
-    () => updateOpenAtLogin(refusedApp, 'Wattelier.exe', true),
+    () => updateOpenAtLogin(refusedApp, 'Wattelier.exe', true, null),
     /Windows n’a pas activé.*Paramètres.*Démarrage/,
   );
 
@@ -156,8 +160,40 @@ test('le démarrage Windows signale un refus au lieu de laisser le bouton sans r
     },
   };
   assert.throws(
-    () => updateOpenAtLogin(cannotDisableApp, 'Wattelier.exe', false),
+    () => updateOpenAtLogin(cannotDisableApp, 'Wattelier.exe', false, null),
     /Windows n’a pas désactivé.*Paramètres.*Démarrage/,
+  );
+});
+
+test('le démarrage Windows contourne le faux négatif Electron pour un chemin entre guillemets', () => {
+  const executablePath = 'C:\\Program Files\\Wattelier\\Wattelier.exe';
+  const electronApp = {
+    setLoginItemSettings() {},
+    getLoginItemSettings() {
+      return { openAtLogin: false, executableWillLaunchAtLogin: false };
+    },
+  };
+  const enabledRegistry = () => true;
+
+  assert.equal(readOpenAtLogin(electronApp, executablePath, enabledRegistry), true);
+  assert.equal(updateOpenAtLogin(electronApp, executablePath, true, enabledRegistry), true);
+});
+
+test('lit l’entrée Wattelier et respecte la désactivation dans StartupApproved', () => {
+  const executablePath = 'C:\\Program Files\\Wattelier\\Wattelier.exe';
+  const runEntry = { found: true, value: `"${executablePath}" --hidden` };
+
+  assert.equal(
+    readWindowsLoginItemState(executablePath, (key) =>
+      key.includes('StartupApproved') ? { found: false, value: '' } : runEntry,
+    ),
+    true,
+  );
+  assert.equal(
+    readWindowsLoginItemState(executablePath, (key) =>
+      key.includes('StartupApproved') ? { found: true, value: '03 00 00 00' } : runEntry,
+    ),
+    false,
   );
 });
 
