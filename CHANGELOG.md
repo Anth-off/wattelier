@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.2](https://github.com/Anth-off/wattelier/compare/wattelier-v2.6.1...wattelier-v2.6.2) (2026-08-25)
+
+
+### Corrections
+
+* **desktop:** fiabilise le démarrage automatique Windows ([#2](https://github.com/Anth-off/wattelier/pull/2)) ([041c082](https://github.com/Anth-off/wattelier/commit/041c082813d6fd807f3e9ec0ed8c824f74daadad))
+
 ## [2.6.1](https://github.com/Anth-off/wattelier/compare/wattelier-v2.6.0...wattelier-v2.6.1) (2026-08-24)
 
 
